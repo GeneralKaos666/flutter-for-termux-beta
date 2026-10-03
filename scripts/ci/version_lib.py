@@ -81,7 +81,7 @@ def deb_version(tag: str, pkg_rel: str, snapshot: str = "", framework_version: s
     '3.47.6-0.0.pre-123', the next pre-release past the last stable per
     flutter_tools version.dart) is translated to Debian tilde form and
     suffixed with the snapshot stamp ('3.47.6~0.0.pre.123+main.20260926.
-    8db5526-1') so main snapshots sort above the last stable but below
+    8db5526-1') so beta snapshots sort above the last stable but below
     the next final. Without a framework version it falls back to the
     legacy '0~main.20260926.8db5526-1' (lower than any stable).
     """

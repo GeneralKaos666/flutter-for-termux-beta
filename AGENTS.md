@@ -37,7 +37,7 @@ or `python3 build.py patch --file=./patches/<name>.patch --path=<repo path>`. Sk
 Key details:
 
 - Modes come from `build.toml [build] runtime`, currently `['release']` only. To also build debug/profile you must rebuild those steps with `--mode=debug|profile`.
-- `tag` is `'main'` (non-semver, no `v` prefix). Release asset is snapshot-stamped (`flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb`) via `utils.deb_version()` from the `framework_*` pins: never hardcode a stamped name; derive it or run drift `--fix`.
+- `tag` is a beta pre-release tag (e.g. `'3.49.0-0.2.pre'`, digit-leading, no `v` prefix). Release asset is plain-tag (`flutter_3.49.0-0.2.pre-1_aarch64.deb`) via `utils.deb_version()` from the `[flutter]` pins: never hardcode a deb name; derive it or run drift `--fix`.
 - Prefix `NO_RECORD=1` to bypass the `@utils.record` debug-logging wrapper (it logs and re-raises; bypass reduces log noise, used by CI for `python3 build.py tag`).
 - NDK discovery: build.py reads `[ndk] path` from build.toml, else the `ANDROID_NDK` env var. Workflows translate `NDK_PATH`/`ANDROID_NDK_HOME` → `ANDROID_NDK`.
 - Host must have `dpkg` (sysroot.py runs `dpkg -x`) and `ar` (package.py runs `ar rc`).
@@ -82,7 +82,7 @@ git diff --check
 - `build.yml`: GitHub-hosted full `.deb` build via `workflow_run` after the daily refresh (plus push of hand-edited build inputs, daily gated schedule, manual dispatch; uses the NDK that ships on hosted runners via `ANDROID_NDK` env); publishes a stable per-deb release with the deb. This is the primary build path.
 - `build-deb.yml`: self-hosted fallback full `.deb` build + artifact/evidence collection (feeds `device-smoke.yml`) for maintainers without hosted-runner time budget.
 - `device-smoke.yml`: manual Windows+ADB: verifies candidate deb SHA256/commit binding, runs Termux smoke, optionally promotes the release.
-- `main-refresh.yml`: once daily (11:00 UTC): probes upstream Flutter main HEAD, refreshes `build.toml` pins + snapshot stamp, pushes (a `workflow_run` trigger starts a gated `build.yml` run; 12:00 UTC schedule is fallback).
+- `beta-refresh.yml`: once daily (11:00 UTC): probes the latest upstream Flutter `.pre` tag, refreshes `build.toml` pins when a new pre tag appears, pushes (a `workflow_run` trigger starts a gated `build.yml` run; 12:00 UTC schedule is fallback).
 - `release-check.yml`: on PRs and `release` events: verifies release asset metadata via `scripts/ci/verify_release_asset.py`.
 
 ## Gotchas
@@ -95,8 +95,8 @@ git diff --check
 6. **`build()` ninja targets are contract**: `flutter` + `flutter/build/archives:artifacts`, `:dart_sdk_archive`, `:flutter_patched_sdk`, `flutter/shell/platform/linux:flutter_gtk`, `flutter/tools/font_subset`. Dropping `flutter_gtk` breaks `flutter build linux`; `test_build.py` asserts this exact target list. `patches/dart.new.patch` is a symlink to `patches/dart.patch`: edit `dart.patch` only.
 7. **`sysroot/` is disposable** (gitignored). Rebuild with `python3 build.py sysroot --arch=arm64`; `sysroot.lock.json` records the pinned package set and is required by `check_repo.py`.
 8. **Repo hygiene is enforced.** New docs go under `docs/` (only `AGENTS.md`, `README.md`, etc. may live at root); every `.sh` needs a `#!` shebang with LF-only endings (same for the `build.py`/`package.py`/`sysroot.py`/ci-script entrypoints); never commit `scratch/`, `*.bak`, `*.receipt.json`, or test caches; keep `post_install.sh` marker comments intact (`PLATFORM_ABI_LIST`, Gradle-cache/NDK-download patches, Termux host→Linux-artifact mapping).
-9. **`package_version` drives both the control `Version:` and the `.deb` filename: keep them coupled.** dpkg versions must start with a digit, so non-semver tags ship as `0~main…`; a `main-1`-style value fails install with "version number does not start with digit". Monotonicity comes from the date+hash stamp: every refresh must rename the asset or apt treats the new build as a downgrade.
-10. **`main-refresh.yml` probes fail closed.** It parses `flutter --version --machine` (`frameworkRevision` 40-hex, `frameworkCommitDate` as `YYYY-MM-DD HH:MM:SS ±ZZZZ`, `dartSdkVersion`, `devToolsVersion`) with strict regexes and aborts the run on any mismatch: read the failed run's log, fix the parser, never loosen it to "make CI green".
+9. **`package_version` drives both the control `Version:` and the `.deb` filename: keep them coupled.** dpkg versions must start with a digit; beta pre tags (e.g. `3.49.0-0.2.pre`) pass straight through as `{tag}-{pkg_rel}`. Monotonicity comes from the upstream tag itself: every refresh must rename the asset or apt treats the new build as a downgrade.
+10. **`beta-refresh.yml` probes fail closed.** It parses `flutter --version --machine` (`frameworkRevision` 40-hex, `frameworkCommitDate` as `YYYY-MM-DD HH:MM:SS ±ZZZZ`, `dartSdkVersion`, `devToolsVersion`) with strict regexes and aborts the run on any mismatch: read the failed run's log, fix the parser, never loosen it to "make CI green".
 11. **Edits to tracked `.py`/`.sh` files get whole-file reformatted** (ruff format / shfmt style) by the editing environment: always check `git diff --numstat` after an edit and revert unrelated hunks; prefer precise shell-applied replacements when a minimal diff matters.
 
 ## Termux runtime
@@ -124,6 +124,6 @@ flutter/engine/src/out/
 ## Environment
 
 - Host: Linux x86-64 (WSL2 Ubuntu locally, `ubuntu-latest` in CI), NDK r29, API 26
-- Target: aarch64, Flutter main (`build.toml [flutter] tag`)
+- Target: aarch64, Flutter beta pre tag (`build.toml [flutter] tag`)
 - `flutter/` and `sysroot/` are gitignored build trees: never commit them
 - Use PowerShell (not Git Bash) for `adb push` to avoid path mangling

@@ -85,7 +85,7 @@ You validate repo-specific contracts with `check_repo.py`, including:
 - self-hosted workflows are not triggered by `pull_request`
 - `package.yaml` still packages `dart`, `dartvm`, `dartaotruntime`, and `post_install`
 - `post_install.sh` still contains the Flutter 3.44 `PLATFORM_ABI_LIST` and Android-host patches
-- installer defaults remain on Flutter main and NDK r29 for Termux installs
+- installer defaults remain on Flutter beta and NDK r29 for Termux installs
 - release/download docs do not regress to stale 3.41.5 commands
 
 ## Full deb build
@@ -132,27 +132,27 @@ back to **Build deb (self-hosted)** (`.github/workflows/build-deb.yml`):
 If `gclient` is missing, you bootstrap `depot_tools` in that self-hosted workflow,
 then run the same patched pipeline (see above) before uploading:
 
-- `flutter_3.47.6~0.0.pre+main.20260926.8db5526-1_aarch64.deb`
-- `flutter_3.47.6~0.0.pre+main.20260926.8db5526-1_aarch64.deb.sha256`
-- `flutter_3.47.6~0.0.pre+main.20260926.8db5526-1_aarch64.deb.size.txt`
+- `flutter_3.49.0-0.2.pre-1_aarch64.deb`
+- `flutter_3.49.0-0.2.pre-1_aarch64.deb.sha256`
+- `flutter_3.49.0-0.2.pre-1_aarch64.deb.size.txt`
 
 ## Release policy
 
 Merging to `main` leaves publishing to the refresh-triggered `Build` run. The `Build`
-run (daily 11:00 UTC refresh via `workflow_run`, plus 12:00 UTC fallback) builds only when the pins
-equal upstream HEAD and the deb for those pins is not yet released, then
+run (daily 11:00 UTC refresh via `workflow_run`, plus 12:00 UTC fallback) builds only when the pinned tag
+equals the latest upstream `.pre` tag and the deb for those pins is not yet released, then
 publishes the resulting `.deb` as a stable release under a versioned tag
 (`v<upstream>.<YYYYMMDD>.<shorthash>`, e.g. `v3.49.0-0.1.pre.20260929.fab9915`) while the deb
-itself keeps the full dpkg version (`3.49.0~0.1.pre+main.20260929.fab9915-1`).
+itself keeps the plain-tag dpkg version (`3.49.0-0.2.pre-1`).
 You can also dispatch `Build` through `workflow_dispatch`. Any push-race or
 patch conflict fails closed: resolve the conflict and get a green build before
 any pin push, build, or new tag.
 
 ### Keep-stable per-deb policy (2026-09-29 decision)
 
-Each main `.deb` ships under its own date+hash-suffixed tag (`$RELEASE_TAG`,
-`v<upstream>.<YYYYMMDD>.<shorthash>`), never a bare semver, so a main tag can
-never collide with a stable release tag and main debs never reuse a stable
+Each beta `.deb` ships under its own date+hash-suffixed tag (`$RELEASE_TAG`,
+`v<upstream>.<YYYYMMDD>.<shorthash>`), never a bare semver, so a beta tag can
+never collide with a stable release tag and beta debs never reuse a stable
 tag or asset name. The tag shape is proven by
 `test_build.py::test_main_release_tag_never_collides_with_stable`. Because
 every refresh renames both tag and asset, stable `Latest` moves with each
@@ -178,12 +178,12 @@ self-hosted **Build deb (self-hosted)** workflow instead.
 
 Manual workflow: **Device smoke (self-hosted)**
 
-No hosted main-channel release exists yet. After the first main build
+No hosted beta-channel release exists yet. After the first beta build
 publishes, test that release asset with the default input:
 
 ```text
-deb_url: https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/main/flutter_3.47.6~0.0.pre+main.20260926.8db5526-1_aarch64.deb
-expected_sha256: TBD (refresh after the first main build; installers fail closed until then)
+deb_url: https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb
+expected_sha256: TBD (refresh after the first beta build; installers fail closed until then)
 ```
 
 Required self-hosted environment:
@@ -290,5 +290,5 @@ Manual Windows-to-tablet smoke:
 ```powershell
 scripts/device/run_termux_smoke.ps1 `
   -AdbPath "C:\Users\aa223\AppData\Local\Android\Sdk\platform-tools\adb.exe" `
-  -DebUrl "https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/main/flutter_3.47.6~0.0.pre+main.20260926.8db5526-1_aarch64.deb"
+  -DebUrl "https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb"
 ```

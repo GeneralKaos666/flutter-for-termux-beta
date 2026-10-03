@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Tracking main
-- Moved `build.toml [flutter] tag` to `main` with Dart `3.14.0-271.0.dev`, framework `8db5526` (`2026-09-26 15:45:14 -0700`), DevTools `2.61.0-dev.0`.
-- Deb version follows the framework version from `flutter --version --machine` in Debian tilde form plus the snapshot stamp (`flutter_3.47.6~0.0.pre+main.20260926.8db5526-1_aarch64.deb` via `utils.deb_version()` / `flutter_to_deb_upstream()` / `snapshot_stamp()`) so main snapshots sort above the last stable (`3.47.5`) but below the next final, and each refresh sorts as an upgrade.
-- No hosted main-channel release exists yet; size/SHA stay `TBD` and installers fail closed until the first main build publishes.
+### Tracking beta
+- Moved `build.toml [flutter] tag` to the latest beta pre tag (`3.49.0-0.2.pre`, framework `38ec981` dated `2026-09-30 16:52:04 +0000`) with Dart `3.14.0 (build 3.14.0-294.0.dev)`, DevTools `2.61.0`.
+- Deb version is the plain tag (`flutter_3.49.0-0.2.pre-1_aarch64.deb` via `utils.deb_version()`); no snapshot stamp — the build only refreshes when a new upstream `.pre` tag appears.
+- No hosted beta-channel release exists yet; size/SHA stay `TBD` and installers fail closed until the first beta build publishes.
 - Documented the refresh loop (`clone --force` → verify patches → pin versions → drift `--fix` → full verification) in `BUILD_GUIDE.md`.
-- Daily gated autobuild: `main-refresh.yml` (09:00 UTC) validates patches fail-closed before pushing pins, and `build.yml` (12:00 UTC `gate` job) builds only when pins equal upstream HEAD and the deb is unreleased: no new tag until conflicts are resolved; manual dispatch still always builds.
+- Daily gated autobuild: `beta-refresh.yml` (11:00 UTC) validates patches fail-closed before pushing pins, and `build.yml` (12:00 UTC `gate` job) builds only when the pinned tag equals the latest upstream `.pre` tag and the deb is unreleased: no new tag until conflicts are resolved; manual dispatch still always builds.
 
 ### Infrastructure & CI
 - Lifted `compileSdk`/`targetSdk` default from 34 to 36 (fail-closed ladder 36→35→34) using Termux aapt2 16.0.0.4 (Android Build-Tools), driven by `build.toml` `[android]` and applied per-project by `post_install.sh`/`flutter_project_config.sh`.

@@ -10,10 +10,10 @@ installs into a Termux `$PREFIX` and enables `flutter run`,
 
 | Component | Version |
 |-----------|---------|
-| Flutter   | main channel |
+| Flutter   | beta channel |
 | Dart      | 3.14.0-271.0.dev |
 | Architecture | aarch64 (ARM64) only |
-| Package   | `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` |
+| Package   | `flutter_3.49.0-0.2.pre-1_aarch64.deb` |
 
 Release assets include:
 - `flutter_<tag>-<pkg_rel>_aarch64.deb`
@@ -21,21 +21,21 @@ Release assets include:
 - `flutter_<tag>-<pkg_rel>_aarch64.deb.size.txt`
 - `inventory.txt`, `build_metadata.json`, `build_evidence.json`
 
-Download (after the first main build publishes):
+Download (after the first beta build publishes):
 
 ```bash
-RELEASE_TAG=v3.49.0-0.2.pre.20261003.53d381d
-DEB="flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb"
-BASE_URL="https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/${RELEASE_TAG}/"
+RELEASE_TAG=v3.49.0-0.2.pre.20260930.38ec981
+DEB="flutter_3.49.0-0.2.pre-1_aarch64.deb"
+BASE_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/"
 
 curl -fSL -o "$DEB" "${BASE_URL}${DEB}"
 curl -fSL -o "${DEB}.sha256" "${BASE_URL}${DEB}.sha256"
 sha256sum -c "${DEB}.sha256"
 ```
 
-No hosted main-channel release exists yet. Build the deb yourself
+No hosted beta-channel release exists yet. Build the deb yourself
 (see [Build guide](docs/guides/BUILD_GUIDE.md)) and `adb push` it until
-the first main build publishes. Installers fail closed on
+the first beta build publishes. Installers fail closed on
 `EXPECTED_SHA256` until the hash refreshes.
 
 ## Install
@@ -53,7 +53,7 @@ pkg install x11-repo
 ### One-command install
 
 ```bash
-curl -sL https://raw.githubusercontent.com/GeneralKaos666/prerelease-flutter-for-termux/main/install_flutter_complete.sh \
+curl -sL https://raw.githubusercontent.com/GeneralKaos666/flutter-for-termux-beta/main/install_flutter_complete.sh \
   -o install_flutter_complete.sh
 bash install_flutter_complete.sh
 ```
@@ -64,9 +64,9 @@ You get the release package plus the on-device Android SDK/toolchain
 ### Manual install
 
 ```bash
-RELEASE_TAG=v3.49.0-0.2.pre.20261003.53d381d
-DEB="flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb"
-BASE_URL="https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/${RELEASE_TAG}/"
+RELEASE_TAG=v3.49.0-0.2.pre.20260930.38ec981
+DEB="flutter_3.49.0-0.2.pre-1_aarch64.deb"
+BASE_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/"
 
 curl -fSL -o "$DEB" "${BASE_URL}${DEB}"
 curl -fSL -o "${DEB}.sha256" "${BASE_URL}${DEB}.sha256"
@@ -225,7 +225,7 @@ You build on earlier work:
   and docs.
 - You depend on upstream [Flutter](https://github.com/flutter/flutter), Dart,
   Skia, and Termux to build and run.
-- You track Flutter `main` here as `prerelease-flutter-for-termux`, continuing
+- You track Flutter `beta` here as `flutter-for-termux-beta`, continuing
   the `GeneralKaos666/flutter-for-termux` line.
 
 ## Limitations

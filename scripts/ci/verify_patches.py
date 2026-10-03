@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify patches against a pinned Flutter framework revision.
 
-Fail-closed rebase evidence used by ``main-refresh.yml`` (probed HEAD) and
+Fail-closed rebase evidence used by ``beta-refresh.yml`` (probed .pre tag) and
 ``validate.yml`` (pinned ``build.toml`` revision):
 
 - ``engine.patch`` must apply cleanly: ``git apply --check`` inside a

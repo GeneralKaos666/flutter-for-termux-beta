@@ -79,7 +79,7 @@ def deb_version(tag: str, pkg_rel: str, snapshot: str = "", framework_version: s
     '3.47.6-0.0.pre-123', the next pre-release past the last stable per
     flutter_tools version.dart) is translated to Debian tilde form and
     suffixed with the snapshot stamp ('3.47.6~0.0.pre.123+main.20260926.
-    8db5526-1') so main snapshots sort above the last stable but below
+    8db5526-1') so beta snapshots sort above the last stable but below
     the next final. Without a framework version it falls back to the
     legacy '0~main.20260926.8db5526-1' (lower than any stable).
     """
@@ -107,9 +107,9 @@ def flutter_tag(root: str):
 def flutter_checkout_matches(root: str, tag: str) -> bool:
     """True when the checkout at root already matches the requested tag.
 
-    Stable tags (semver) compare via nearest-tag describe; branch names
-    such as 'main' compare via branch/commit since describe would return
-    the nearest stable tag instead.
+    Stable tags (semver) and beta pre tags (e.g. 3.49.0-0.2.pre) compare
+    via nearest-tag describe; branch names such as 'main'/'beta' compare
+    via branch/commit since describe would return the nearest tag instead.
     """
     if not tag or not os.path.isdir(root):
         return False
@@ -117,7 +117,7 @@ def flutter_checkout_matches(root: str, tag: str) -> bool:
         repo = git.Repo(root)
     except (git.exc.GitCommandError, git.exc.InvalidGitRepositoryError):
         return False
-    if re.fullmatch(r"\d+\.\d+\.\d+", tag):
+    if re.fullmatch(r"\d+\.\d+\.\d+(-\d+\.\d+\.pre(-\d+)?)?", tag):
         try:
             return repo.git.describe("--tag", "--abbrev=0") == tag
         except git.exc.GitCommandError:

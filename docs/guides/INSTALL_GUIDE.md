@@ -1,6 +1,6 @@
-# Termux Flutter main Installation Guide
+# Termux Flutter beta Installation Guide
 
-This guide covers `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` on ARM64 Termux:
+This guide covers `flutter_3.49.0-0.2.pre-1_aarch64.deb` on ARM64 Termux:
 
 - `flutter doctor -v`
 - `flutter create`
@@ -12,13 +12,13 @@ This guide covers `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` o
 
 | Item | Value |
 |------|-------|
-| Flutter | main (framework `8db5526`, `2026-09-26 15:45:14 -0700`) |
+| Flutter | 3.49.0-0.2.pre (framework `38ec981`, `2026-09-30 16:52:04 +0000`) |
 | Flutter Tools Dart | 3.14.0-271.0.dev |
 | Dart VM (`dartvm`) | post-install `dartvm` resolves to Dart 3.14.0-271.0.dev (`android_arm64`) |
 
 | Test device | Samsung SM-X716B / Android 16 / ARM64 (reference smoke device) |
-| deb size | TBD (refresh on first main build) |
-| SHA256 | `TBD (refresh on first main build)` |
+| deb size | TBD (refresh on first beta build) |
+| SHA256 | `TBD (refresh on first beta build)` |
 
 ## System Requirements
 
@@ -33,7 +33,7 @@ This guide covers `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` o
 ## Method 1: One-Command Install (Recommended)
 
 ```bash
-curl -sL https://raw.githubusercontent.com/GeneralKaos666/prerelease-flutter-for-termux/main/install_flutter_complete.sh -o ~/install.sh
+curl -sL https://raw.githubusercontent.com/GeneralKaos666/flutter-for-termux-beta/main/install_flutter_complete.sh -o ~/install.sh
 bash ~/install.sh
 ```
 
@@ -46,15 +46,15 @@ pkg update -y
 pkg install -y x11-repo git wget curl unzip openjdk-21 aapt2 android-tools cmake ninja clang
 
 cd ~
-# NOTE (tracking-main): no hosted main-channel release exists yet. Build the
+# NOTE (beta): no hosted beta-channel release exists yet. Build the
 # deb yourself (see BUILD_GUIDE.md) and adb push it, e.g.:
-# adb push flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb /data/local/tmp/
-wget https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/v3.49.0-0.2.pre.20261003.53d381d/flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
-sha256sum flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
+# adb push flutter_3.49.0-0.2.pre-1_aarch64.deb /data/local/tmp/
+wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb
+sha256sum flutter_3.49.0-0.2.pre-1_aarch64.deb
 # No published hash to confirm against yet; the installer fails closed until
-# EXPECTED_SHA256 is refreshed after the first main build.
+# EXPECTED_SHA256 is refreshed after the first beta build.
 
-dpkg -i flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
+dpkg -i flutter_3.49.0-0.2.pre-1_aarch64.deb
 apt --fix-broken install -y
 
 # Required: dpkg only installs files; this step patches the Termux runtime.
@@ -98,7 +98,7 @@ flutter doctor -v
 
 Expected highlights:
 
-- `flutter --version` shows Flutter main.
+- `flutter --version` shows Flutter beta.
 - `dart --version` shows `android_arm64` (Termux JIT Dart).
 - `dartvm --version` shows `linux_arm64` (engine VM).
 

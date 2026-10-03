@@ -5,19 +5,19 @@
 # every value here in sync with build.toml when cutting a release.
 
 # Flutter release (matches [flutter] tag in build.toml)
-export FLUTTER_VERSION="main"
+export FLUTTER_VERSION="3.49.0-0.2.pre"
 # Framework version from `flutter --version --machine` at the pinned revision
 # (matches [flutter] framework_version in build.toml). Translated to Debian
-# tilde form so main snapshots sort above the last stable but below the next
+# tilde form so beta snapshots sort above the last stable but below the next
 # final (3.47.6~0.0.pre+main.<snap>-1 > 3.47.5-1, < 3.47.6-1).
 export FLUTTER_FRAMEWORK_VERSION="3.49.0-0.2.pre"
 export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-1}"
-export FLUTTER_SNAPSHOT="20261003.53d381d"
-export RELEASE_TAG="v3.49.0-0.2.pre.20261003.53d381d"
-# No hosted main-channel release exists yet: refresh after the first main
+export FLUTTER_SNAPSHOT="20260930.38ec981"
+export RELEASE_TAG="v3.49.0-0.2.pre.20260930.38ec981"
+# No hosted beta-channel release exists yet: refresh after the first beta
 # build or pass FLUTTER_DEB_SHA256. Installers fail closed until then.
-export EXPECTED_SHA256="TBD-refresh-after-first-main-build"
-# dpkg versions must start with a digit. Stable tags pass through; main
+export EXPECTED_SHA256="TBD-refresh-after-first-beta-build"
+# dpkg versions must start with a digit. Stable and pre tags pass through; branch
 # snapshots use the framework version in Debian tilde form plus the snapshot
 # stamp (3.47.6~0.0.pre+main.YYYYMMDD.hash) so installs move forward from the
 # last stable and never block the next final as a downgrade.

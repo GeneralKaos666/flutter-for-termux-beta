@@ -30,7 +30,7 @@ on:
     # resolved and the build succeeds.
     - cron: '0 12 * * *'
   workflow_run:
-    workflows: ['main-refresh']
+    workflows: ['beta-refresh']
     types: [completed]
     branches: [main]
 
@@ -45,7 +45,7 @@ jobs:
   gate:
     # Cheap change detector: decides whether the expensive engine build
     # should run. Manual dispatches always build. Scheduled and push runs
-    # build only when build.toml pins equal upstream HEAD (no refresh
+    # build only when build.toml tag equals the latest upstream .pre tag (no refresh
     # conflict pending) AND the deb derived from those pins is absent
     # from the release.
     # The deb name is recomputed here from build.toml at tip, so it always
@@ -72,12 +72,14 @@ jobs:
             echo "Manual dispatch: always build."
             exit 0
           fi
-          HEAD=$(git ls-remote https://github.com/flutter/flutter.git HEAD | cut -f1)
-          if [ -z "$HEAD" ]; then
-            echo "empty ls-remote result for upstream HEAD" >&2
+          LATEST_PRE=$(git ls-remote --tags https://github.com/flutter/flutter.git \
+            | grep -E 'refs/tags/[0-9]+\.[0-9]+\.[0-9]+-.*\.pre$' \
+            | sed 's|.*refs/tags/||' | sort -V | tail -1)
+          if [ -z "$LATEST_PRE" ]; then
+            echo "empty .pre tag list from upstream" >&2
             exit 1
           fi
-          python3 - "$HEAD" >> "$GITHUB_OUTPUT" <<'PY'
+          python3 - "$LATEST_PRE" >> "$GITHUB_OUTPUT" <<'PY'
           import json
           import os
           import sys
@@ -85,11 +87,11 @@ jobs:
           import urllib.error
           import urllib.request
 
-          head = sys.argv[1]
+          latest_pre = sys.argv[1]
           with open("build.toml", "rb") as f:
               cfg = tomllib.load(f)
           flutter = cfg.get("flutter", {})
-          tag = str(flutter.get("tag") or "main")
+          tag = str(flutter.get("tag") or "")
           fw_ver = str(flutter.get("framework_version", "") or "").strip()
           pinned = str(flutter.get("framework_revision") or "")
           commit_date = str(flutter.get("framework_commit_date") or "")
@@ -110,12 +112,12 @@ jobs:
           def emit(build, reason):
               print(f"should_build={'true' if build else 'false'}")
               print(f"reason={reason}")
-              print(f"upstream HEAD: {head[:12]}, pinned: {pinned[:12] if pinned else '(empty)'}, tag: {release_tag}, deb: {deb_name} -> {reason}", file=sys.stderr)
+              print(f"upstream latest .pre: {latest_pre}, pinned tag: {tag}, pinned: {pinned[:12] if pinned else '(empty)'}, tag: {release_tag}, deb: {deb_name} -> {reason}", file=sys.stderr)
 
-          if not pinned:
+          if not tag or not pinned:
               emit(False, "no-pinned-revision")
               raise SystemExit(0)
-          if head != pinned:
+          if tag != latest_pre:
               # Refresh has not landed (conflict, failure, or not yet run):
               # do NOT build stale pins and do NOT push any tag.
               emit(False, "pins-stale")

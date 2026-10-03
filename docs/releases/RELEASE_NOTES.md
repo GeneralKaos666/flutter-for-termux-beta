@@ -1,17 +1,17 @@
-# Flutter main for Termux ARM64
+# Flutter beta for Termux ARM64
 
-**Flutter main / Dart 3.14.0-271.0.dev for Android-bionic ARM64 hosts.**
+**Flutter beta / Dart 3.14.0-271.0.dev for Android-bionic ARM64 hosts.**
 
-This package brings the Termux Flutter SDK to Flutter main. You get post-v3.44.2 installer hardening, dynamic JAVA_HOME auto-detection, PREFIX quoting hardened for `set -euo pipefail`, and refreshed Termux toolchain sysroot packages.
+This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2 installer hardening, dynamic JAVA_HOME auto-detection, PREFIX quoting hardened for `set -euo pipefail`, and refreshed Termux toolchain sysroot packages.
 
 ## Package
 
 | Item | Value |
 |------|-------|
-| Package | `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` |
-| Size | `TBD (refresh on first main build)` |
-| SHA256 | `TBD (refresh on first main build)` |
-| Flutter | main |
+| Package | `flutter_3.49.0-0.2.pre-1_aarch64.deb` |
+| Size | `TBD (refresh on first beta build)` |
+| SHA256 | `TBD (refresh on first beta build)` |
+| Flutter | 3.49.0-0.2.pre (beta) |
 | Flutter Tools Dart | 3.14.0-271.0.dev |
 | Dart VM | post-install `dartvm` resolves to Dart 3.14.0-271.0.dev (`android_arm64`) |
 | Target host | Termux / Android bionic / ARM64 |
@@ -21,10 +21,10 @@ This package brings the Termux Flutter SDK to Flutter main. You get post-v3.44.2
 ```bash
 pkg update -y
 pkg install -y x11-repo wget openjdk-21 7zip
-# NOTE (tracking-main): no hosted main-channel release exists yet. Build the
+# NOTE (beta): no hosted beta-channel release exists yet. Build the
 # deb yourself (see BUILD_GUIDE.md) and adb push it instead of wget.
-wget https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/v3.49.0-0.2.pre.20261003.53d381d/flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
-dpkg -i flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
+wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb
+dpkg -i flutter_3.49.0-0.2.pre-1_aarch64.deb
 apt --fix-broken install -y
 bash $PREFIX/share/flutter/post_install.sh
 source $PREFIX/etc/profile.d/flutter.sh
@@ -37,7 +37,7 @@ Device smoke on Samsung SM-X716B / Android 16 / ARM64 Termux:
 
 | Command | Result |
 |---------|--------|
-| `flutter --version` | ✅ Flutter main (framework `8db5526`, `2026-09-26`) |
+| `flutter --version` | ✅ Flutter beta (framework `8db5526`, `2026-09-26`) |
 | `dart --version` | ✅ Dart 3.14.0-271.0.dev on `android_arm64` |
 | `dartvm --version` | ✅ Dart 3.14.0-271.0.dev on `linux_arm64` |
 | `flutter doctor -v` | ✅ completes; unknown channel / no connected device are expected warnings |
@@ -48,9 +48,9 @@ Device smoke on Samsung SM-X716B / Android 16 / ARM64 Termux:
 
 ## Highlights
 
-### Flutter main update
+### Flutter beta update
 
-- Track Flutter main with updated package metadata, NDK configurations, and patches (Dart 3.14.0-271.0.dev, framework `8db5526` dated `2026-09-26`).
+- Track Flutter beta with updated package metadata, NDK configurations, and patches (Dart 3.14.0-271.0.dev, framework `8db5526` dated `2026-09-26`).
 - Keep the Flutter CLI on Termux JIT Dart and preserve engine VM tools for snapshots.
 
 ### Installer & Environment Hardening
@@ -66,7 +66,7 @@ Device smoke on Samsung SM-X716B / Android 16 / ARM64 Termux:
 ### Technical Details
 
 - Build output directories: `linux_debug_arm64/`, `linux_release_arm64/`, `linux_profile_arm64/`, `android_release_arm64/`, `android_profile_arm64/`
-- Deb package size is TBD until the first main build publishes.
+- Deb package size is TBD until the first beta build publishes.
 
 ## Required per-project Android settings
 

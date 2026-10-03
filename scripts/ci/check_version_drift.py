@@ -41,6 +41,7 @@ INSTALLER_SCRIPTS = [
     "scripts/test/gh_e2e_test.sh",
 ]
 SEMVER_PATTERN = r"\d+\.\d+\.\d+"
+FULL_VER_PATTERN = r"\d+\.\d+\.\d+(?:-\d+\.\d+\.pre(?:-\d+)?)?"
 DEB_NAME_PATTERN = rf"flutter_(?:{SEMVER_PATTERN}(?:~[^/\s`\"'_]+)?(?:\+[^/\s`\"'_]+)?(?:-[^/\s`\"\']+)?|(?:0~)?main(?:[.-][^/\s`\"\']+)?)_aarch64\.deb"
 
 
@@ -50,14 +51,14 @@ def fail(msg: str) -> None:
 
 def replace_line_value(text: str, key: str, value: str) -> tuple[str, int]:
     return re.subn(
-        rf'(?m)^(\s*(?:export\s+)?{re.escape(key)}\s*=\s*["\']?){SEMVER_PATTERN}(["\']?)',
+        rf'(?m)^(\s*(?:export\s+)?{re.escape(key)}\s*=\s*["\']?){FULL_VER_PATTERN}(["\']?)',
         rf'\g<1>{value}\g<2>',
         text,
     )
 
 
 def replace_default_var_value(text: str, key: str, value: str) -> tuple[str, int]:
-    return re.subn(rf'(\$\{{\s*{re.escape(key)}\s*:-){SEMVER_PATTERN}(}})', rf'\g<1>{value}\g<2>', text)
+    return re.subn(rf'(\$\{{\s*{re.escape(key)}\s*:-){FULL_VER_PATTERN}(}})', rf'\g<1>{value}\g<2>', text)
 
 
 def replace_line_int_value(text: str, key: str, value: str) -> tuple[str, int]:
@@ -94,7 +95,7 @@ def apply_version_autofix(cfg: dict[str, str], root_path: Path | None = None) ->
         # Any literal tag (semver, "main", "0~main...", stale snapshot tag):
         # never rewrite $ variable references such as ${RELEASE_TAG}.
         text = re.sub(
-            r"(https://github\.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/)([^/$\s][^/]*)(/)",
+            r"(https://github\.com/GeneralKaos666/flutter-for-termux-beta/releases/download/)([^/$\s][^/]*)(/)",
             rf"\g<1>{release_tag}\g<3>",
             text,
         )
@@ -129,7 +130,22 @@ def apply_version_autofix(cfg: dict[str, str], root_path: Path | None = None) ->
             text,
         )
         text = replace_line_value(text, "CANONICAL_FLUTTER_VER", tag)[0]
+        text = re.sub(
+            r'(?m)^(\s*(?:export\s+)?CANONICAL_FLUTTER_VER\s*=\s*["\']?)(?!\$)([^"\'\s\n}]+)(["\']?)',
+            rf"\g<1>{tag}\g<3>",
+            text,
+        )
         text = replace_line_value(text, "EXP_VER", tag)[0]
+        text = re.sub(
+            r'(?m)^(\s*(?:export\s+)?EXP_VER\s*=\s*["\']?)(?!\$)([^"\'\s\n}]+)(["\']?)',
+            rf"\g<1>{tag}\g<3>",
+            text,
+        )
+        text = re.sub(
+            r'(?m)^(\s*(?:export\s+)?FLUTTER_VERSION\s*=\s*["\']?)(?!\$)([^"\'\s\n}]+)(["\']?)',
+            rf"\g<1>{tag}\g<3>",
+            text,
+        )
         text = re.sub(
             r'(?m)^(\s*(?:export\s+)?(?:CANONICAL_CHANNEL|EXP_CHANNEL)\s*=\s*["\']?)[^"\'\n]*(["\']?)',
             rf"\g<1>{channel}\g<2>",
@@ -202,7 +218,7 @@ def load_build_config(root_path: Path | None = None) -> dict[str, str]:
         "size": str(size) if size else "",
         "pkg_rel": pkg_rel,
         "asset_name": str(asset_name),
-        "channel": "main" if str(tag) == "main" else "stable",
+        "channel": ("main" if str(tag) == "main" else "beta" if (str(tag) == "beta" or str(tag).endswith(".pre")) else "stable"),
     }
 
 

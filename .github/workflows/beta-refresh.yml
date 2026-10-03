@@ -1,14 +1,13 @@
-name: main-refresh
+name: beta-refresh
 
-# Tracks Flutter main: probes upstream HEAD once daily (11:00 UTC), refreshes
-# the build.toml pins + snapshot stamp when main moves, and pushes so the
-# workflow_run-triggered build.yml run (gated) packages the latest engine
+# Tracks latest Flutter beta pre-release tag (e.g. 3.49.0-0.2.pre):
+# probes upstream tags once daily (11:00 UTC), refreshes build.toml
+# pins when a new .pre tag appears, and pushes so the
+# workflow_run-triggered build.yml run (gated) packages it
 # (12:00 UTC scheduled run kept as fallback).
 # Refresh only — it never builds and never pushes tags (see build.yml).
 # Patch conflicts fail closed here (no pin push) and again in build.yml
-# (no tag/release). There is intentionally no stable-version logic here
-# (the old autorelease.yml was deleted because its stable bump corrupted
-# main-tracking files).
+# (no tag/release). No main-tracking logic here (beta-refresh.yml deleted).
 
 on:
   schedule:
@@ -19,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: main-refresh
+  group: beta-refresh
   cancel-in-progress: false
 
 jobs:
@@ -30,46 +29,56 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - name: Probe upstream main HEAD
+      - name: Probe latest upstream .pre tag
         id: probe
         run: |
           set -euo pipefail
-          HEAD=$(git ls-remote https://github.com/flutter/flutter.git HEAD | cut -f1)
-          if [ -z "$HEAD" ]; then
-            echo "empty ls-remote result for upstream HEAD" >&2
+          TAG=$(git ls-remote --tags https://github.com/flutter/flutter.git \
+            | grep -E 'refs/tags/[0-9]+\.[0-9]+\.[0-9]+-.*\.pre$' \
+            | sed 's|.*refs/tags/||' \
+            | sort -V | tail -1)
+          if [ -z "$TAG" ]; then
+            echo "empty .pre tag list from upstream" >&2
             exit 1
           fi
-          echo "HEAD=$HEAD" >> "$GITHUB_OUTPUT"
-          echo "upstream main HEAD: $HEAD"
+          SHA=$(git ls-remote --tags https://github.com/flutter/flutter.git "refs/tags/${TAG}" | cut -f1)
+          if [ -z "$SHA" ]; then
+            echo "could not resolve SHA for tag $TAG" >&2
+            exit 1
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+          echo "SHA=$SHA" >> "$GITHUB_OUTPUT"
+          echo "upstream latest .pre tag: $TAG ($SHA)"
 
-      - name: Compare with pinned revision
+      - name: Compare with pinned tag
         id: check
         run: |
-          python3 - "${{ steps.probe.outputs.HEAD }}" >> "$GITHUB_OUTPUT" <<'PY'
+          python3 - "${{ steps.probe.outputs.TAG }}" >> "$GITHUB_OUTPUT" <<'PY'
           import sys
           import tomllib
-          head = sys.argv[1]
+          latest = sys.argv[1]
           with open("build.toml", "rb") as f:
-              current = tomllib.load(f)["flutter"].get("framework_revision", "")
-          if head == current:
+              current = tomllib.load(f)["flutter"].get("tag", "")
+          if latest == current:
               print("should_refresh=false")
-              print(f"already at upstream main ({head[:7]}), nothing to do.", file=sys.stderr)
+              print(f"already at latest .pre tag ({latest}), nothing to do.", file=sys.stderr)
           else:
               print("should_refresh=true")
-              print(f"main moved: {current[:7]} -> {head[:7]}", file=sys.stderr)
+              print(f"new .pre tag: {current} -> {latest}", file=sys.stderr)
           PY
 
-      - name: Probe release metadata from a shallow main checkout
+      - name: Probe release metadata from a shallow tag checkout
         id: meta
         if: steps.check.outputs.should_refresh == 'true'
         run: |
           set -euo pipefail
           rm -rf /tmp/flutter-probe
-          git clone --depth 1 https://github.com/flutter/flutter.git /tmp/flutter-probe
+          git clone --depth 1 --branch "${{ steps.probe.outputs.TAG }}" \
+            https://github.com/flutter/flutter.git /tmp/flutter-probe
           cd /tmp/flutter-probe
           CLONE_HEAD=$(git rev-parse HEAD)
-          if [ "$CLONE_HEAD" != "${{ steps.probe.outputs.HEAD }}" ]; then
-            echo "clone raced upstream ($CLONE_HEAD != ${{ steps.probe.outputs.HEAD }}); rerun later." >&2
+          if [ "$CLONE_HEAD" != "${{ steps.probe.outputs.SHA }}" ]; then
+            echo "clone raced upstream ($CLONE_HEAD != ${{ steps.probe.outputs.SHA }}); rerun later." >&2
             exit 1
           fi
           git config --global --add safe.directory /tmp/flutter-probe
@@ -77,12 +86,13 @@ jobs:
           # and would corrupt --machine JSON on first run), then capture.
           /tmp/flutter-probe/bin/flutter --version > /dev/null
           /tmp/flutter-probe/bin/flutter --version --machine > /tmp/flutter-version.json
-          python3 - /tmp/flutter-version.json >> "$GITHUB_OUTPUT" <<'PY'
+          python3 - /tmp/flutter-version.json "${{ steps.probe.outputs.TAG }}" >> "$GITHUB_OUTPUT" <<'PY'
           import json
           import re
           import sys
           with open(sys.argv[1], encoding="utf-8") as f:
               m = json.load(f)
+          expected_tag = sys.argv[2]
           rev = m.get("frameworkRevision", "")
           date = m.get("frameworkCommitDate", "")
           dart = m.get("dartSdkVersion", "")
@@ -99,8 +109,10 @@ jobs:
               raise SystemExit(f"unexpected frameworkCommitDate format: {date!r}")
           if fwver == "0.0.0-unknown":
               raise SystemExit(f"flutter --version --machine returned unknown frameworkVersion; full JSON:\n{json.dumps(m, indent=2)[:2000]}")
-          if not re.fullmatch(r"\d+\.\d+\.\d+(-\d+\.\d+\.pre(-\d+)?)?", fwver):
-              raise SystemExit(f"unexpected frameworkVersion format: {fwver!r}")
+          if not re.fullmatch(r"\d+\.\d+\.\d+-\d+\.\d+\.pre", fwver):
+              raise SystemExit(f"unexpected frameworkVersion format for beta pre tag: {fwver!r}")
+          if fwver != expected_tag:
+              raise SystemExit(f"frameworkVersion {fwver!r} != probed tag {expected_tag!r}")
           print(f"NEW_REV={rev}")
           print(f"NEW_DATE={date}")
           print(f"NEW_DART={dart}")
@@ -108,15 +120,15 @@ jobs:
           print(f"NEW_FWVER={fwver}")
           PY
 
-      - name: Validate patches against probed HEAD (fail closed)
+      - name: Validate patches against probed tag (fail closed)
         if: steps.check.outputs.should_refresh == 'true'
         run: |
           set -euo pipefail
           # Pinned-REV rebase evidence: on patch conflict stop here (no pin
           # bump, no push, and therefore no downstream build/tag). Reuses the
-          # /tmp/flutter-probe checkout (already verified at probed HEAD) and
+          # /tmp/flutter-probe checkout (already verified at probed tag) and
           # records patches/last-rebase.txt, committed with the pin bump below.
-          python3 scripts/ci/verify_patches.py --rev "${{ steps.probe.outputs.HEAD }}" --checkout /tmp/flutter-probe
+          python3 scripts/ci/verify_patches.py --rev "${{ steps.probe.outputs.SHA }}" --checkout /tmp/flutter-probe
           cat patches/last-rebase.txt
 
       - name: Bump build.toml pins
@@ -130,6 +142,7 @@ jobs:
           p = Path("build.toml")
           text = p.read_text(encoding="utf-8")
           for field, value in (
+              ("tag", "${{ steps.probe.outputs.TAG }}"),
               ("dart_version", "${{ steps.meta.outputs.NEW_DART }}"),
               ("framework_version", "${{ steps.meta.outputs.NEW_FWVER }}"),
               ("framework_revision", "${{ steps.meta.outputs.NEW_REV }}"),
@@ -156,7 +169,12 @@ jobs:
           with open("build.toml", "rb") as f:
               flutter = tomllib.load(f)["flutter"]
           tag = str(flutter.get("tag", ""))
-          channel = "main" if tag == "main" else "stable"
+          if tag == "main":
+              channel = "main"
+          elif tag == "beta" or tag.endswith(".pre"):
+              channel = "beta"
+          else:
+              channel = "stable"
           values = {
               "CANONICAL_FLUTTER_VER": tag,
               "CANONICAL_FRAMEWORK_REV": str(flutter.get("framework_revision", "")),
@@ -209,7 +227,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "chore(main): refresh pins to flutter/main@${{ steps.probe.outputs.HEAD }}"
+          git commit -m "chore(beta): refresh pins to flutter/${{ steps.probe.outputs.TAG }}"
           # Branch push only (never --tags, never --force): on a push race
           # (non-fast-forward) this fails with no pin push, and the gated
           # build.yml run then skips (pins-stale) so no new tag is pushed

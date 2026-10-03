@@ -1,6 +1,6 @@
 # Flutter Version Upgrade Guide
 
-This document shows how you upgrade Termux Flutter from the current main pins (`build.toml [flutter] tag='main'`, Dart `3.14.0-271.0.dev`) to a new revision, and which risk points in Dart / Flutter Tools / Gradle plugins you re-check after the main move.
+This document shows how you upgrade Termux Flutter from the current beta pins (`build.toml [flutter] tag='3.49.0-0.2.pre'`, Dart `3.14.0-294.0.dev`) to a new revision, and which risk points in Dart / Flutter Tools / Gradle plugins you re-check after the beta move.
 
 ---
 
@@ -20,7 +20,7 @@ This document shows how you upgrade Termux Flutter from the current main pins (`
 □ Step 11: Publish a GitHub Release
 ```
 
-## Must-Check Items (main channel)
+## Must-Check Items (beta channel)
 
 | Item | Why it matters | How to check |
 |------|------------|----------|
@@ -38,7 +38,7 @@ Edit `build.toml`:
 
 ```toml
 [flutter]
-tag = 'main'    # ← stable uses '3.XX.Y'; this branch tracks 'main'
+tag = '3.49.0-0.2.pre'    # ← stable uses '3.XX.Y'; this repo tracks the latest beta `.pre` tag
 ```
 
 > Leave other fields alone (NDK path, jobs).
@@ -247,9 +247,9 @@ python3 build.py debuild --arch=arm64
 This will:
 1. Sync the latest `scripts/`, `patches/`, `package.yaml`, `build.toml` from Windows to WSL
 2. Collect all build outputs according to `package.yaml`
-3. Package them into `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` (derived from `build.toml` via `Build.output('arm64')`; never hardcode a stamped name)
+3. Package them into `flutter_3.49.0-0.2.pre-1_aarch64.deb` (derived from `build.toml` via `Build.output('arm64')`; never hardcode a stamped name)
 
-> Output path: `release/flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb`
+> Output path: `release/flutter_3.49.0-0.2.pre-1_aarch64.deb`
 
 ---
 
@@ -257,13 +257,13 @@ This will:
 
 ```powershell
 # Copy from WSL to Windows
-Copy-Item "\\wsl.localhost\Ubuntu\home\YOUR_USER\termux-flutter\release\flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb" .
+Copy-Item "\\wsl.localhost\Ubuntu\home\YOUR_USER\termux-flutter\release\flutter_3.49.0-0.2.pre-1_aarch64.deb" .
 
 # Push to the device
-adb push flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb /data/local/tmp/
+adb push flutter_3.49.0-0.2.pre-1_aarch64.deb /data/local/tmp/
 
 # Install in Termux
-dpkg -i /data/local/tmp/flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
+dpkg -i /data/local/tmp/flutter_3.49.0-0.2.pre-1_aarch64.deb
 apt-get install -f
 bash $PREFIX/share/flutter/post_install.sh
 source $PREFIX/etc/profile.d/flutter.sh
@@ -299,8 +299,8 @@ If the new Flutter version changes any of these locations, update them:
 
 ```powershell
 # Update version
-$VER = "main"
-$DEB = "flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb"
+$VER = "3.49.0-0.2.pre"
+$DEB = "flutter_3.49.0-0.2.pre-1_aarch64.deb"
 
 # Create the release
 gh release create "$VER" `

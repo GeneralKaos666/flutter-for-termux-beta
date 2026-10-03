@@ -3,7 +3,7 @@
 # Termux Flutter one-click installation script
 # One-click installer for Flutter development on Termux
 #
-# Usage: curl -sL https://raw.githubusercontent.com/GeneralKaos666/prerelease-flutter-for-termux/main/scripts/install/install_termux_flutter.sh -o ~/install.sh && bash ~/install.sh
+# Usage: curl -sL https://raw.githubusercontent.com/GeneralKaos666/flutter-for-termux-beta/main/scripts/install/install_termux_flutter.sh -o ~/install.sh && bash ~/install.sh
 #
 # Target state (v3.47.5):
 #   - flutter doctor / create / build / run: must be re-verified on a clean Termux environment before release
@@ -13,16 +13,16 @@ set -euo pipefail
 
 source "$(dirname "$0")/lib_common.sh" || {
 	echo "Fetching lib_common.sh..."
-	curl -sLO https://raw.githubusercontent.com/GeneralKaos666/prerelease-flutter-for-termux/main/scripts/install/lib_common.sh
+	curl -sLO https://raw.githubusercontent.com/GeneralKaos666/flutter-for-termux-beta/main/scripts/install/lib_common.sh
 	source ./lib_common.sh
 }
 
 parse_installer_args "$@"
 
 trap print_summary EXIT
-# dpkg versions must start with a digit. Stable tags pass through; main
+# dpkg versions must start with a digit. Stable and pre tags pass through; branch
 # snapshots prefer the framework version in Debian tilde form plus snapshot
-# (3.47.6~0.0.pre+main.<snap>), falling back to legacy 0~main.<snap>.
+# (3.47.6~0.0.pre+main.<snap>), falling back to legacy 0~branch.<snap>.
 _DEB_TAG="${FLUTTER_VERSION}"
 case "${_DEB_TAG}" in
 [0-9]*) ;;
@@ -44,7 +44,7 @@ case "${_DEB_TAG}" in
 	;;
 esac
 FLUTTER_DEB_NAME="${FLUTTER_DEB_NAME:-flutter_${_DEB_TAG}-${FLUTTER_PKG_REL:-1}_aarch64.deb}"
-FLUTTER_DEB_URL="https://github.com/GeneralKaos666/prerelease-flutter-for-termux/releases/download/${RELEASE_TAG}/${FLUTTER_DEB_NAME}"
+FLUTTER_DEB_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/${FLUTTER_DEB_NAME}"
 
 echo -e "${BLUE}"
 echo "╔═══════════════════════════════════════════════════════════╗"
@@ -153,5 +153,5 @@ echo "   sed -i '1s|#!/usr/bin/env bash|#!/data/data/com.termux/files/usr/bin/ba
 echo "   Set compileSdk=${TERMUX_COMPILE_SDK:-36}, targetSdk=${TERMUX_TARGET_SDK:-36}, ndk { abiFilters += listOf(\"arm64-v8a\") }"
 echo "   Add android.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2 to gradle.properties"
 echo ""
-echo -e "Documentation: ${BLUE}https://github.com/GeneralKaos666/prerelease-flutter-for-termux${NC}"
+echo -e "Documentation: ${BLUE}https://github.com/GeneralKaos666/flutter-for-termux-beta${NC}"
 echo ""

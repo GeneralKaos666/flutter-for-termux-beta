@@ -4,9 +4,9 @@ Build a Flutter deb package with Android gen_snapshot from scratch.
 
 ## Tracking-main branch policy (local-only)
 
-This branch (`tracking-main`) builds the Flutter `main` channel instead of
+This branch (`beta`) builds the Flutter `main` channel instead of
 stable: `build.toml [flutter] tag` is `main`, so the produced deb is
-`flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb`. There are no hosted `main`-channel releases.
+`flutter_3.49.0-0.2.pre-1_aarch64.deb`. There are no hosted `main`-channel releases.
 
 - Refresh loop: `python3 build.py clone --force`, verify `patches/*.patch`
   still apply (a shallow `main` checkout plus the DEPS-pinned dart/skia
@@ -17,7 +17,7 @@ stable: `build.toml [flutter] tag` is `main`, so the produced deb is
   hand-sync the `CANONICAL_*` markers in `post_install.sh` and the `EXP_*`
   markers in `flutter_termux_doctor.sh` (the autofix does not cover them),
   then run the full lightweight verification from `AGENTS.md`.
-- Nightly `main-refresh.yml` refreshes pins (probe
+- Nightly `beta-refresh.yml` refreshes pins (probe
   upstream HEAD → `flutter --version --machine` → pins → `generate_versions.py`
   → drift `--fix` → push); use the manual loop above when patches need
   rebasing or the bot is red.
@@ -32,11 +32,11 @@ stable: `build.toml [flutter] tag` is `main`, so the produced deb is
 
 | Item | Value |
 |------|----|
-| Flutter tag | `main` |
-| Engine revision | `TBD (refresh on first main build)` |
-| Package | `flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb` |
-| Package size | `TBD (refresh on first main build)` |
-| SHA256 | `TBD (refresh on first main build)` |
+| Flutter tag | `3.49.0-0.2.pre` |
+| Engine revision | `TBD (refresh on first beta build)` |
+| Package | `flutter_3.49.0-0.2.pre-1_aarch64.deb` |
+| Package size | `TBD (refresh on first beta build)` |
+| SHA256 | `TBD (refresh on first beta build)` |
 | Device smoke | Samsung SM-X716B / Android 16 / Termux |
 
 Note these (first observed around 3.47.5) on this branch:
@@ -171,7 +171,7 @@ echo 'export PATH="$HOME/depot_tools:$PATH"' >> ~/.bashrc
 ```bash
 mkdir -p ~/projects
 cd ~/projects
-git clone https://github.com/GeneralKaos666/prerelease-flutter-for-termux.git termux-flutter
+git clone https://github.com/GeneralKaos666/flutter-for-termux-beta.git termux-flutter
 cd termux-flutter
 ```
 
@@ -220,7 +220,7 @@ python3 build.py debuild --arch=arm64
 
 After the build completes, the deb package is located at:
 ```
-release/flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
+release/flutter_3.49.0-0.2.pre-1_aarch64.deb
 ```
 
 ## deb Package Contents
@@ -302,7 +302,7 @@ The Flutter Engine source is about 30GB and the build output about 20GB, so you 
 After installing the deb, run the following in Termux:
 
 ```bash
-dpkg -i flutter_3.49.0~0.2.pre+main.20261003.53d381d-1_aarch64.deb
+dpkg -i flutter_3.49.0-0.2.pre-1_aarch64.deb
 apt --fix-broken install -y
 bash $PREFIX/share/flutter/post_install.sh
 source $PREFIX/etc/profile.d/flutter.sh
@@ -607,7 +607,7 @@ flutter run                     # ✅ verified (Hot Reload supported)
 
 | Feature | Status | Description |
 |------|------|------|
-| `flutter --version` | ✅ OK | Flutter main / Tools Dart 3.14.0-271.0.dev |
+| `flutter --version` | ✅ OK | Flutter beta / Tools Dart 3.14.0-271.0.dev |
 | `dart --version` | ✅ OK | Termux JIT Dart 3.14.0-271.0.dev (`android_arm64`) |
 | `dartvm --version` | ✅ OK | post-install `dartvm` resolves to Dart 3.14.0-271.0.dev (`android_arm64`) |
 | `flutter doctor -v` | ✅ OK | unknown channel / no device are expected warnings |
