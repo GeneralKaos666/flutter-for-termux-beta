@@ -41,35 +41,24 @@ def flutter_to_deb_upstream(framework_version: str) -> str:
     return fw
 
 
-def release_tag(framework_version: str, commit_date: str, revision: str = "") -> str:
-    """Short stable GitHub release tag 'v<upstream>.<YYYYMMDD>.<shorthash>'.
+def release_tag(tag: str, pkg_rel: str = "", snapshot: str = "", framework_version: str = "") -> str:
+    """Short GitHub release tag mirroring the deb, e.g. 'v3.49.0-0.2.pre-1'.
 
-    Keeps the .deb full (deb_version) for dpkg monotonicity while the
-    GitHub release uses a short human tag, e.g. framework
-    '3.49.0-0.1.pre' + '2026-09-29 ...' + 'fab9915...' ->
-    'v3.49.0-0.1.pre.20260929.fab9915'.
-    Falls back to date-only or version-only when a pin is missing.
+    Defined as 'v' + deb_version(tag, pkg_rel, snapshot, framework_version)
+    so the release tag stays short like the deb asset
+    ('flutter_<deb_version>_aarch64.deb'). Rebuilds with identical pins
+    reuse the same tag; bump [package] pkg_rel for a new build of the
+    same tag.
 
     NOTE: must stay a valid git ref (no '~': git check-ref-format
     rejects it, and the GitHub release API fails finalizing with
-    "tag_name is not a valid tag"). Debian '~' is only for deb_version.
+    "tag_name is not a valid tag"). Debian '~' is only for deb_version,
+    so it is translated to '-' here.
     """
-    fw = flutter_to_deb_upstream(framework_version).replace("~", "-")
-    day = re.split(r"[ T]", str(commit_date or "").strip(), maxsplit=1)[0].replace("-", "")
-    short = str(revision or "").strip()[:7]
-    if fw and day and short:
-        return f"v{fw}.{day}.{short}"
-    if fw and day:
-        return f"v{fw}.{day}"
-    if fw and short:
-        return f"v{fw}.{short}"
-    if fw:
-        return f"v{fw}"
-    if day and short:
-        return f"vmain.{day}.{short}"
-    if day:
-        return "vmain." + day
-    return ""
+    dv = deb_version(tag, pkg_rel, snapshot, framework_version)
+    if not dv:
+        return ""
+    return "v" + dv.replace("~", "-")
 
 
 def deb_version(tag: str, pkg_rel: str, snapshot: str = "", framework_version: str = "") -> str:

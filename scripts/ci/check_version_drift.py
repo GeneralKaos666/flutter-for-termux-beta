@@ -199,7 +199,7 @@ def load_build_config(root_path: Path | None = None) -> dict[str, str]:
     # Single-sourced from version_lib so each main refresh renames the asset.
     snapshot = snapshot_stamp(framework_commit_date or "", framework_revision or "")
     package_version = deb_version(str(tag), pkg_rel, snapshot, framework_version)
-    release_tag = lib_release_tag(framework_version, framework_commit_date, framework_revision)
+    release_tag = lib_release_tag(str(tag), pkg_rel, snapshot, framework_version)
     asset_name = f"flutter_{package_version}_aarch64.deb"
 
     if not tag:

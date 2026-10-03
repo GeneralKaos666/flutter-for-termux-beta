@@ -49,7 +49,7 @@ cd ~
 # NOTE (beta): no hosted beta-channel release exists yet. Build the
 # deb yourself (see BUILD_GUIDE.md) and adb push it, e.g.:
 # adb push flutter_3.49.0-0.2.pre-1_aarch64.deb /data/local/tmp/
-wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb
+wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre-1/flutter_3.49.0-0.2.pre-1_aarch64.deb
 sha256sum flutter_3.49.0-0.2.pre-1_aarch64.deb
 # No published hash to confirm against yet; the installer fails closed until
 # EXPECTED_SHA256 is refreshed after the first beta build.

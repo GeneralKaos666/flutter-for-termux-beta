@@ -24,7 +24,7 @@ Release assets include:
 Download (after the first beta build publishes):
 
 ```bash
-RELEASE_TAG=v3.49.0-0.2.pre.20260930.38ec981
+RELEASE_TAG=v3.49.0-0.2.pre-1
 DEB="flutter_3.49.0-0.2.pre-1_aarch64.deb"
 BASE_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/"
 
@@ -64,7 +64,7 @@ You get the release package plus the on-device Android SDK/toolchain
 ### Manual install
 
 ```bash
-RELEASE_TAG=v3.49.0-0.2.pre.20260930.38ec981
+RELEASE_TAG=v3.49.0-0.2.pre-1
 DEB="flutter_3.49.0-0.2.pre-1_aarch64.deb"
 BASE_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/"
 

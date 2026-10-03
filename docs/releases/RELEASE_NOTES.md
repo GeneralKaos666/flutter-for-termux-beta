@@ -23,7 +23,7 @@ pkg update -y
 pkg install -y x11-repo wget openjdk-21 7zip
 # NOTE (beta): no hosted beta-channel release exists yet. Build the
 # deb yourself (see BUILD_GUIDE.md) and adb push it instead of wget.
-wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb
+wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre-1/flutter_3.49.0-0.2.pre-1_aarch64.deb
 dpkg -i flutter_3.49.0-0.2.pre-1_aarch64.deb
 apt --fix-broken install -y
 bash $PREFIX/share/flutter/post_install.sh

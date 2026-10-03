@@ -492,7 +492,7 @@ def test_version_single_source_matches_build():
     os.environ.setdefault("ANDROID_NDK", "/tmp/android-ndk")
     b = build.Build()
     assert b.release_tag == version_lib.release_tag(
-        b.framework_version, b.framework_commit_date, b.framework_revision
+        b.tag, b.pkg_rel, b.snapshot, b.framework_version
     )
     assert b.package_version == version_lib.deb_version(
         b.tag, b.pkg_rel, b.snapshot, b.framework_version
@@ -523,7 +523,7 @@ def test_main_release_tag_never_collides_with_stable():
     os.environ.setdefault("ANDROID_NDK", "/tmp/android-ndk")
     b = build.Build()
     assert not re.fullmatch(r"v?\d+\.\d+\.\d+", b.release_tag)
-    assert re.fullmatch(r"v(\d+\.\d+\.\d+-.+|main)\.\d{8}\.[0-9a-f]{7}", b.release_tag)
+    assert re.fullmatch(r"v\d+\.\d+\.\d+-.+-\d+", b.release_tag)
 
 
 def test_dart_canonical_vs_prose_forms():

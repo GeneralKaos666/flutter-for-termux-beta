@@ -98,13 +98,13 @@ jobs:
           pkg_rel = str(cfg.get("package", {}).get("pkg_rel") or "").strip()
 
           # Single-sourced from scripts/ci/version_lib so the gate deb name
-          # matches Build.output() at build time, including the stable
-          # per-deb GitHub release tag (v<upstream>.<YYYYMMDD>.<shorthash>).
+          # matches Build.output() at build time, including the short
+          # deb-like GitHub release tag (v<deb_version>, e.g. v3.49.0-0.2.pre-1).
           sys.path.insert(0, "scripts/ci")
           import version_lib
 
           snapshot = version_lib.snapshot_stamp(commit_date or "", pinned or "")
-          release_tag = version_lib.release_tag(fw_ver, commit_date, pinned)
+          release_tag = version_lib.release_tag(tag, pkg_rel, snapshot, fw_ver)
           package_version = version_lib.deb_version(tag, pkg_rel, snapshot, fw_ver)
           deb_name = version_lib.asset_name(tag, pkg_rel, snapshot, fw_ver)
           print(f"release_tag={release_tag}")
@@ -392,10 +392,11 @@ jobs:
           name: ${{ steps.parser.outputs.TITLE }}
           body: ${{ steps.commitmsg.outputs.BODY }}
           draft: false
-          # Keep-stable per 2026-09-29 decision: safe because release_tag is
-          # always date+hash suffixed (v<upstream>.<YYYYMMDD>.<shorthash>),
+          # Keep-stable: safe because the deb-like release_tag is always
+          # pkg_rel suffixed (v<tag>-<pkg_rel>, e.g. v3.49.0-0.2.pre-1),
           # never a bare semver, so per-deb tags cannot collide with stable
-          # tags; the release_guard gate above + overwrite_files:false below
+          # tags; bump [package] pkg_rel for a rebuild of the same tag.
+          # The release_guard gate above + overwrite_files:false below
           # preserve asset immutability.
           prerelease: false
           make_latest: true

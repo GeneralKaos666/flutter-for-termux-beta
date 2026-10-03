@@ -87,7 +87,7 @@ class Build:
             self.tag, self.pkg_rel, self.snapshot, self.framework_version
         )
         self.release_tag = utils.release_tag(
-            self.framework_version, self.framework_commit_date, self.framework_revision
+            self.tag, self.pkg_rel, self.snapshot, self.framework_version
         )
         self.devtools_version = cfg["flutter"].get("devtools_version") or ""
         self.ndk_version = cfg["ndk"].get("version") or ""

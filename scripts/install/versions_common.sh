@@ -13,7 +13,7 @@ export FLUTTER_VERSION="3.49.0-0.2.pre"
 export FLUTTER_FRAMEWORK_VERSION="3.49.0-0.2.pre"
 export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-1}"
 export FLUTTER_SNAPSHOT="20260930.38ec981"
-export RELEASE_TAG="v3.49.0-0.2.pre.20260930.38ec981"
+export RELEASE_TAG="v3.49.0-0.2.pre-1"
 # No hosted beta-channel release exists yet: refresh after the first beta
 # build or pass FLUTTER_DEB_SHA256. Installers fail closed until then.
 export EXPECTED_SHA256="TBD-refresh-after-first-beta-build"

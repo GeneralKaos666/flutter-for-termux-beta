@@ -58,16 +58,16 @@ def flutter_to_deb_upstream(framework_version: str) -> str:
     return _lib_fw_upstream(framework_version)
 
 
-def release_tag(framework_version: str, commit_date: str, revision: str = "") -> str:
-    """Short stable GitHub release tag 'v<upstream>.<YYYYMMDD>.<shorthash>'.
+def release_tag(tag: str, pkg_rel: str = "", snapshot: str = "", framework_version: str = "") -> str:
+    """Short GitHub release tag mirroring the deb, e.g. 'v3.49.0-0.2.pre-1'.
 
-    Keeps the .deb full (deb_version) for dpkg monotonicity while the
-    GitHub release uses a short human tag, e.g. framework
-    '3.49.0-0.1.pre' + '2026-09-29 ...' + 'fab9915...' ->
-    'v3.49.0-0.1.pre.20260929.fab9915'.
-    Falls back to date-only or version-only when a pin is missing.
+    Defined as 'v' + deb_version(tag, pkg_rel, snapshot, framework_version)
+    so the release tag stays short like the deb asset
+    ('flutter_<deb_version>_aarch64.deb'). Rebuilds with identical pins
+    reuse the same tag; bump [package] pkg_rel for a new build of the
+    same tag.
     """
-    return _lib_release_tag(framework_version, commit_date, revision)
+    return _lib_release_tag(tag, pkg_rel, snapshot, framework_version)
 
 
 def deb_version(tag: str, pkg_rel: str, snapshot: str = "", framework_version: str = "") -> str:

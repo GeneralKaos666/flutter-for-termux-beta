@@ -141,20 +141,21 @@ then run the same patched pipeline (see above) before uploading:
 Merging to `main` leaves publishing to the refresh-triggered `Build` run. The `Build`
 run (daily 11:00 UTC refresh via `workflow_run`, plus 12:00 UTC fallback) builds only when the pinned tag
 equals the latest upstream `.pre` tag and the deb for those pins is not yet released, then
-publishes the resulting `.deb` as a stable release under a versioned tag
-(`v<upstream>.<YYYYMMDD>.<shorthash>`, e.g. `v3.49.0-0.1.pre.20260929.fab9915`) while the deb
+publishes the resulting `.deb` as a stable release under a short deb-like
+versioned tag (`v<tag>-<pkg_rel>`, e.g. `v3.49.0-0.2.pre-1`) while the deb
 itself keeps the plain-tag dpkg version (`3.49.0-0.2.pre-1`).
 You can also dispatch `Build` through `workflow_dispatch`. Any push-race or
 patch conflict fails closed: resolve the conflict and get a green build before
 any pin push, build, or new tag.
 
-### Keep-stable per-deb policy (2026-09-29 decision)
+### Keep-stable per-deb policy (2026-09-29 decision, shortened 2026-10-04)
 
-Each beta `.deb` ships under its own date+hash-suffixed tag (`$RELEASE_TAG`,
-`v<upstream>.<YYYYMMDD>.<shorthash>`), never a bare semver, so a beta tag can
+Each beta `.deb` ships under its own short deb-like tag (`$RELEASE_TAG`,
+`v<tag>-<pkg_rel>`, e.g. `v3.49.0-0.2.pre-1`), never a bare semver, so a beta tag can
 never collide with a stable release tag and beta debs never reuse a stable
 tag or asset name. The tag shape is proven by
-`test_build.py::test_main_release_tag_never_collides_with_stable`. Because
+`test_build.py::test_main_release_tag_never_collides_with_stable`. Bump
+`[package] pkg_rel` for a rebuild of the same tag; because
 every refresh renames both tag and asset, stable `Latest` moves with each
 per-deb publish by design; that is expected, not a regression. Asset
 immutability is guarded twice: the `release_guard` job sets
@@ -182,7 +183,7 @@ No hosted beta-channel release exists yet. After the first beta build
 publishes, test that release asset with the default input:
 
 ```text
-deb_url: https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb
+deb_url: https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre-1/flutter_3.49.0-0.2.pre-1_aarch64.deb
 expected_sha256: TBD (refresh after the first beta build; installers fail closed until then)
 ```
 
@@ -290,5 +291,5 @@ Manual Windows-to-tablet smoke:
 ```powershell
 scripts/device/run_termux_smoke.ps1 `
   -AdbPath "C:\Users\aa223\AppData\Local\Android\Sdk\platform-tools\adb.exe" `
-  -DebUrl "https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre.20260930.38ec981/flutter_3.49.0-0.2.pre-1_aarch64.deb"
+  -DebUrl "https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre-1/flutter_3.49.0-0.2.pre-1_aarch64.deb"
 ```

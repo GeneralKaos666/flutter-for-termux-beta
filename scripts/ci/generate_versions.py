@@ -55,7 +55,7 @@ def replacements(cfg: dict) -> list[tuple[str, str]]:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from version_lib import release_tag as lib_release_tag
         from version_lib import snapshot_stamp as lib_snapshot_stamp
-    release = lib_release_tag(fw_ver, fw_date, fw_rev)
+    release = lib_release_tag(tag, str(cfg.get("package", {}).get("pkg_rel", "") or ""), lib_snapshot_stamp(fw_date, fw_rev), fw_ver)
     snapshot = lib_snapshot_stamp(fw_date, fw_rev)
     return [
         (r'^export FLUTTER_VERSION="[^"]*"', f'export FLUTTER_VERSION="{tag}"'),

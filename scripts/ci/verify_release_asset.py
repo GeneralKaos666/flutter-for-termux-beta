@@ -301,10 +301,8 @@ def main():
             snapshot = ""
         if explicit_release:
             expected_tag = str(explicit_release)
-        elif flutter_tag[:1].isdigit():
-            expected_tag = str(flutter_tag)
         else:
-            expected_tag = lib_release_tag(fw_ver, fw_date, fw_rev) or str(flutter_tag)
+            expected_tag = lib_release_tag(flutter_tag, pkg_rel, snapshot, fw_ver) or str(flutter_tag)
         expected_package_version = deb_version(flutter_tag, pkg_rel, snapshot, fw_ver)
         default_asset = asset_name(flutter_tag, pkg_rel, snapshot, fw_ver)
     expected_asset = flutter_cfg.get("asset_name") or default_asset
