@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Tracking beta
-- Moved `build.toml [flutter] tag` to the latest beta pre tag (`3.49.0-0.2.pre`, framework `38ec981` dated `2026-09-30 16:52:04 +0000`) with Dart `3.14.0 (build 3.14.0-294.0.dev)`, DevTools `2.61.0`.
+- Moved `build.toml [flutter] tag` to the latest beta pre tag (`3.49.0-0.2.pre`, framework `38ec981` dated `2026-09-30 16:52:04 +0000`) with Dart `3.14.0 (build 3.14.0-211.1.beta)`, DevTools `2.61.0`.
 - Deb version is the plain tag (`flutter_3.49.0-0.2.pre-1_aarch64.deb` via `utils.deb_version()`); no snapshot stamp — the build only refreshes when a new upstream `.pre` tag appears.
 - No hosted beta-channel release exists yet; size/SHA stay `TBD` and installers fail closed until the first beta build publishes.
 - Documented the refresh loop (`clone --force` → verify patches → pin versions → drift `--fix` → full verification) in `BUILD_GUIDE.md`.

@@ -366,7 +366,7 @@ flutter-for-termux/
 ## Update Log
 
 ### Unreleased (tracking main)
-- Current pins: Flutter `3.49.0-0.2.pre` (beta), Dart `3.14.0 (build 3.14.0-294.0.dev)`, framework `38ec981` (`2026-09-30`), DevTools `2.61.0`, NDK r29, API 26, compileSdk/targetSdk 36.
+- Current pins: Flutter `3.49.0-0.2.pre` (beta), Dart `3.14.0 (build 3.14.0-211.1.beta)`, framework `38ec981` (`2026-09-30`), DevTools `2.61.0`, NDK r29, API 26, compileSdk/targetSdk 36.
 - No hosted beta-channel release exists yet; size/SHA stay `TBD` until the first beta build publishes.
 
 ### 2026-06-01

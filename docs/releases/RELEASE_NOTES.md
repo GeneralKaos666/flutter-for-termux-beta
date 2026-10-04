@@ -1,6 +1,6 @@
 # Flutter beta for Termux ARM64
 
-**Flutter beta / Dart 3.14.0-271.0.dev for Android-bionic ARM64 hosts.**
+**Flutter beta / Dart 3.14.0-211.1.beta for Android-bionic ARM64 hosts.**
 
 This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2 installer hardening, dynamic JAVA_HOME auto-detection, PREFIX quoting hardened for `set -euo pipefail`, and refreshed Termux toolchain sysroot packages.
 
@@ -12,8 +12,8 @@ This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2
 | Size | `TBD (refresh on first beta build)` |
 | SHA256 | `TBD (refresh on first beta build)` |
 | Flutter | 3.49.0-0.2.pre (beta) |
-| Flutter Tools Dart | 3.14.0-271.0.dev |
-| Dart VM | post-install `dartvm` resolves to Dart 3.14.0-271.0.dev (`android_arm64`) |
+| Flutter Tools Dart | 3.14.0-211.1.beta |
+| Dart VM | post-install `dartvm` resolves to Dart 3.14.0-211.1.beta (`android_arm64`) |
 | Target host | Termux / Android bionic / ARM64 |
 
 ## Install
@@ -38,8 +38,8 @@ Device smoke on Samsung SM-X716B / Android 16 / ARM64 Termux:
 | Command | Result |
 |---------|--------|
 | `flutter --version` | ✅ Flutter beta (framework `8db5526`, `2026-09-26`) |
-| `dart --version` | ✅ Dart 3.14.0-271.0.dev on `android_arm64` |
-| `dartvm --version` | ✅ Dart 3.14.0-271.0.dev on `linux_arm64` |
+| `dart --version` | ✅ Dart 3.14.0-211.1.beta on `android_arm64` |
+| `dartvm --version` | ✅ Dart 3.14.0-211.1.beta on `linux_arm64` |
 | `flutter doctor -v` | ✅ completes; unknown channel / no connected device are expected warnings |
 | `flutter create --platforms=android,linux` | ✅ |
 | `flutter build apk --release --target-platform android-arm64 --no-tree-shake-icons` | ✅ ARM64 APK produced |
@@ -50,7 +50,7 @@ Device smoke on Samsung SM-X716B / Android 16 / ARM64 Termux:
 
 ### Flutter beta update
 
-- Track Flutter beta with updated package metadata, NDK configurations, and patches (Dart 3.14.0-271.0.dev, framework `8db5526` dated `2026-09-26`).
+- Track Flutter beta with updated package metadata, NDK configurations, and patches (Dart 3.14.0-211.1.beta, framework `8db5526` dated `2026-09-26`).
 - Keep the Flutter CLI on Termux JIT Dart and preserve engine VM tools for snapshots.
 
 ### Installer & Environment Hardening

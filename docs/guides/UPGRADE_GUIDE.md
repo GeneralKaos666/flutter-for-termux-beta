@@ -1,6 +1,6 @@
 # Flutter Version Upgrade Guide
 
-This document shows how you upgrade Termux Flutter from the current beta pins (`build.toml [flutter] tag='3.49.0-0.2.pre'`, Dart `3.14.0-294.0.dev`) to a new revision, and which risk points in Dart / Flutter Tools / Gradle plugins you re-check after the beta move.
+This document shows how you upgrade Termux Flutter from the current beta pins (`build.toml [flutter] tag='3.49.0-0.2.pre'`, Dart `3.14.0-211.1.beta`) to a new revision, and which risk points in Dart / Flutter Tools / Gradle plugins you re-check after the beta move.
 
 ---
 

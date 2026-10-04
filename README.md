@@ -11,7 +11,7 @@ installs into a Termux `$PREFIX` and enables `flutter run`,
 | Component | Version |
 |-----------|---------|
 | Flutter   | beta channel |
-| Dart      | 3.14.0-271.0.dev |
+| Dart      | 3.14.0-211.1.beta |
 | Architecture | aarch64 (ARM64) only |
 | Package   | `flutter_3.49.0-0.2.pre-1_aarch64.deb` |
 
