@@ -8,7 +8,7 @@ This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2
 
 | Item | Value |
 |------|-------|
-| Package | `flutter_3.49.0-0.2.pre-1_aarch64.deb` |
+| Package | `flutter_3.50.0-0.1.pre-1_aarch64.deb` |
 | Size | `TBD (refresh on first beta build)` |
 | SHA256 | `TBD (refresh on first beta build)` |
 | Flutter | 3.49.0-0.2.pre (beta) |
@@ -23,8 +23,8 @@ pkg update -y
 pkg install -y x11-repo wget openjdk-21 7zip
 # NOTE (beta): no hosted beta-channel release exists yet. Build the
 # deb yourself (see BUILD_GUIDE.md) and adb push it instead of wget.
-wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre-1/flutter_3.49.0-0.2.pre-1_aarch64.deb
-dpkg -i flutter_3.49.0-0.2.pre-1_aarch64.deb
+wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.50.0-0.1.pre-1/flutter_3.50.0-0.1.pre-1_aarch64.deb
+dpkg -i flutter_3.50.0-0.1.pre-1_aarch64.deb
 apt --fix-broken install -y
 bash $PREFIX/share/flutter/post_install.sh
 source $PREFIX/etc/profile.d/flutter.sh
