@@ -10,8 +10,8 @@ export PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 export PATH=$PREFIX/bin:$PREFIX/opt/flutter/bin:$PATH
 export HOME=/data/data/com.termux/files/home
 export TMPDIR=$PREFIX/tmp
-export RELEASE_TAG=${RELEASE_TAG:-v3.50.0-0.1.pre-1}
-export FLUTTER_VERSION=${FLUTTER_VERSION:-3.50.0-0.1.pre}
+export RELEASE_TAG=${RELEASE_TAG:-v3.50.0-0.2.pre-1}
+export FLUTTER_VERSION=${FLUTTER_VERSION:-3.50.0-0.2.pre}
 export EXPECTED_SHA256=${EXPECTED_SHA256:-${FLUTTER_DEB_SHA256:-}}
 
 source "$(dirname "$0")/../install/lib_common.sh" || {
