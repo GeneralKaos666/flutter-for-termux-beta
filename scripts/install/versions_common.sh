@@ -5,15 +5,15 @@
 # every value here in sync with build.toml when cutting a release.
 
 # Flutter release (matches [flutter] tag in build.toml)
-export FLUTTER_VERSION="3.50.0-0.2.pre"
+export FLUTTER_VERSION="3.50.0-0.3.pre"
 # Framework version from `flutter --version --machine` at the pinned revision
 # (matches [flutter] framework_version in build.toml). Translated to Debian
 # tilde form so beta snapshots sort above the last stable but below the next
 # final (3.47.6~0.0.pre+main.<snap>-1 > 3.47.5-1, < 3.47.6-1).
-export FLUTTER_FRAMEWORK_VERSION="3.50.0-0.2.pre"
+export FLUTTER_FRAMEWORK_VERSION="3.50.0-0.3.pre"
 export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-1}"
-export FLUTTER_SNAPSHOT="20261022.9c0b99e"
-export RELEASE_TAG="v3.50.0-0.2.pre-1"
+export FLUTTER_SNAPSHOT="20261028.13ced38"
+export RELEASE_TAG="v3.50.0-0.3.pre-1"
 # No hosted beta-channel release exists yet: refresh after the first beta
 # build or pass FLUTTER_DEB_SHA256. Installers fail closed until then.
 export EXPECTED_SHA256="TBD-refresh-after-first-beta-build"
