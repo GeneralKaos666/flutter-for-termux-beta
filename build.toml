@@ -1,15 +1,15 @@
 [flutter]
-tag = '3.50.0-0.3.pre'
+tag = '3.50.0-0.4.pre'
 # Framework version from `flutter --version --machine` at the pinned
 # revision (for beta pre-release tags this equals the tag itself,
 # e.g. 3.49.0-0.2.pre). Stable tags and pre tags pass straight through
 # to the deb version as `{tag}-{pkg_rel}` (no snapshot stamp).
-framework_version = '3.50.0-0.3.pre'
+framework_version = '3.50.0-0.4.pre'
 repo = 'https://github.com/flutter/flutter'
 path = './flutter'
 dart_version = '3.14.0 (build 3.14.0-315.3.beta)'
-framework_revision = '13ced383182bf6b41895def9d1f5804e2f5ce8ed'
-framework_commit_date = '2026-10-28 09:52:50 -0700'
+framework_revision = '368ac9e40bad0566927cc9428a42461152652c12'
+framework_commit_date = '2026-11-03 15:18:52 -0800'
 devtools_version = '2.61.0'
 
 [ndk]
