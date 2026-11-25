@@ -13,6 +13,7 @@ import json
 import os
 import re
 import subprocess
+import tarfile
 import tempfile
 import tomllib
 import unittest
@@ -149,6 +150,30 @@ class BuildTest(unittest.TestCase):
             self._make_checkout(out, branch="stable", tag="3.47.5")
             self.instance.clone(url="https://example.com/flutter.git", tag="3.47.5", out=out)
             clone_from.assert_not_called()
+
+    @patch("build.git.Repo.clone_from")
+    def test_clone_is_shallow_by_default(self, clone_from):
+        """The packaged SDK never ships .git, so the clone keeps one commit."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, "flutter")
+            self.instance.clone(url="https://example.com/flutter.git", tag=self.instance.tag, out=out)
+            _, kwargs = clone_from.call_args
+            self.assertEqual(kwargs["depth"], 1)
+            self.assertTrue(kwargs["single_branch"])
+
+    @patch("build.git.Repo.clone_from")
+    def test_clone_depth_zero_keeps_full_history(self, clone_from):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, "flutter")
+            self.instance.clone(
+                url="https://example.com/flutter.git",
+                tag=self.instance.tag,
+                out=out,
+                depth=0,
+            )
+            _, kwargs = clone_from.call_args
+            self.assertNotIn("depth", kwargs)
+            self.assertNotIn("single_branch", kwargs)
 
     def test_dart_patches_are_kept_in_sync(self):
         patch_dir = os.path.join(os.path.dirname(__file__), "patches")
@@ -324,6 +349,238 @@ class PackageManifestTest(unittest.TestCase):
 
             control = pkg.gen_control()["src"].decode("utf-8")
             self.assertIn(f"Version: {package_version}", control)
+
+    def _make_package(self, root: Path):
+        """Build a Package against a minimal temp flutter root.
+
+        ``flutter_tag``/``engine_version`` are stubbed so no real checkout is
+        needed, and the release output dir is created for you."""
+        flutter = self.cfg["flutter"]
+        android = self.cfg["android"]
+        ndk = self.cfg["ndk"]
+        (root / "engine" / "src" / "out" / "linux_release_arm64").mkdir(
+            parents=True, exist_ok=True
+        )
+        with open(Path(__file__).parent / "package.yaml", encoding="utf-8") as f:
+            src = yaml.safe_load(f)
+        with (
+            patch("package.utils.flutter_tag", return_value=flutter["tag"]),
+            patch("package.utils.engine_version", return_value="engine_revision_mock"),
+        ):
+            return package.Package(
+                root=str(root),
+                arch="arm64",
+                dart_version=flutter["dart_version"],
+                framework_revision=flutter["framework_revision"],
+                framework_commit_date=flutter["framework_commit_date"],
+                devtools_version=flutter["devtools_version"],
+                ndk_version=ndk.get("version", ""),
+                compile_sdk=android["compile_sdk"],
+                target_sdk=android["target_sdk"],
+                **src,
+            )
+
+    def test_post_install_resource_ships_config_script(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pkg = self._make_package(Path(tmp, "flutter"))
+            items = list(pkg.gen_resource("post_install"))
+
+        # The deb must ship exactly the documented on-device script, executable.
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(
+            str(item["out"]),
+            "data/data/com.termux/files/usr/share/flutter/post_install.sh",
+        )
+        self.assertEqual(item["mod"], 0o755)
+        expected = (
+            Path(__file__).parent / "scripts" / "install" / "post_install.sh"
+        ).read_bytes()
+        self.assertEqual(Path(item["src"]).read_bytes(), expected)
+
+    def test_tar_never_emits_hardlinks(self):
+        """Duplicate multi-MiB payloads stay full copies.
+
+        Termux installs onto ``/data``, which is f2fs on most devices, and the
+        kernel rejects every ``link(2)`` there with EACCES. dpkg unpacking a
+        ``LNKTYPE`` member then aborts the whole data tar, so the deb cannot be
+        installed at all. xz preset 9 already dedupes the repeated bytes.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            payload = b"x" * (1 << 21)
+            first = Path(tmp, "first.bin")
+            second = Path(tmp, "second.bin")
+            first.write_bytes(payload)
+            second.write_bytes(payload)
+            data_tar = Path(tmp, "data.tar.xz")
+            package.tar(
+                data_tar,
+                [
+                    {"out": "a/first.bin", "src": first},
+                    {"out": "a/second.bin", "src": second},
+                ],
+            )
+            with tarfile.open(data_tar) as tar:
+                members = {m.name: m for m in tar.getmembers()}
+                extracted = tar.extractfile("a/second.bin").read()
+
+        self.assertEqual([m.name for m in members.values() if m.islnk()], [])
+        self.assertFalse(members["a/second.bin"].issym())
+        self.assertEqual(members["a/second.bin"].size, len(payload))
+        self.assertEqual(extracted, payload)
+
+    def test_tar_compresses_with_xz_preset_9(self):
+        """Preset 9 (64 MiB dictionary) dedupes duplicate engine snapshots that
+        the tarfile default (6, 8 MiB) leaves uncompressed twice."""
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp, "a.bin")
+            src.write_bytes(b"x")
+            out = Path(tmp, "data.tar.xz")
+
+            with patch("package.tarfile.open", wraps=tarfile.open) as opener:
+                package.tar(out, [{"out": "a.bin", "src": src}])
+            self.assertEqual(opener.call_args.kwargs["preset"], 9)
+
+            with (
+                patch.dict(os.environ, {"PACKAGE_XZ_PRESET": "3"}),
+                patch("package.tarfile.open", wraps=tarfile.open) as opener,
+            ):
+                package.tar(out, [{"out": "a.bin", "src": src}])
+            self.assertEqual(opener.call_args.kwargs["preset"], 3)
+
+    def test_exclude_prunes_build_only_trees(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp, "tree")
+            for rel in (
+                "bin/flutter",
+                "engine/src/engine.cc",
+                "dev/bots/x.dart",
+                "docs/README.md",
+                "packages/flutter/lib/a.dart",
+                "packages/flutter/test/a_test.dart",
+            ):
+                (root / rel).parent.mkdir(parents=True, exist_ok=True)
+                (root / rel).write_text("x", encoding="utf-8")
+
+            patterns = ["engine/**", "dev/**", "docs/**", "packages/*/test/**"]
+            got = {it.as_posix() for _, it in package.explore(root, False, patterns)}
+
+        self.assertIn("bin/flutter", got)
+        self.assertIn("packages/flutter/lib/a.dart", got)
+        for pruned in ("engine", "dev", "docs", "packages/flutter/test"):
+            self.assertFalse(
+                [it for it in got if it == pruned or it.startswith(pruned + "/")],
+                f"{pruned} was not pruned",
+            )
+
+    def test_git_resources_never_ship_dot_git(self):
+        """A git-backed resource must carry the tree, never .git: 490 MiB of
+        history, and post_install.sh synthesises a repo on device instead."""
+        import git
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp, "repo")
+            (root / "bin").mkdir(parents=True)
+            (root / "bin" / "flutter").write_text("x", encoding="utf-8")
+            repo = git.Repo.init(root)
+            repo.index.add(["bin/flutter"])
+            actor = git.Actor("test", "test@example.com")
+            repo.index.commit("init", author=actor, committer=actor)
+
+            got = {it.as_posix() for _, it in package.explore(root, True)}
+
+        self.assertIn("bin/flutter", got)
+        self.assertFalse([it for it in got if it.startswith(".git")])
+
+    def test_package_ships_maintainer_scripts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            pkg = self._make_package(Path(tmp, "flutter"))
+            scripts = {it["out"]: it for it in pkg.gen_scripts()}
+
+        self.assertEqual(set(scripts), {"preinst", "postinst"})
+        for name, item in scripts.items():
+            self.assertEqual(item["mod"], 0o755, name)
+            text = Path(item["src"]).read_text(encoding="utf-8")
+            self.assertTrue(
+                text.startswith("#!/data/data/com.termux/files/usr/bin/sh"), name
+            )
+
+    def test_postinst_runs_post_install_and_never_fails_the_install(self):
+        script = (
+            Path(__file__).parent / "scripts" / "install" / "deb_postinst.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn("post_install.sh", script)
+        self.assertIn("TERMUX_POSTINST=true", script)
+        self.assertIn("configure) ;;", script)
+        self.assertIn("timeout 1800", script)
+        self.assertTrue(script.rstrip().endswith("exit 0"))
+
+    def test_preinst_reclaims_legacy_payload_only(self):
+        """Legacy .git (upstream clone) and build-only trees are removed on
+        upgrade; a user-owned repo and a synthetic repo are preserved."""
+        import git
+
+        script = Path(__file__).parent / "scripts" / "install" / "deb_preinst.sh"
+
+        def run(root: Path):
+            env = {**os.environ, "FLUTTER_ROOT": str(root), "PREFIX": str(root.parent)}
+            return subprocess.run(
+                ["sh", str(script), "upgrade"],
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            legacy = tmp_path / "legacy"
+            (legacy / "engine" / "src").mkdir(parents=True)
+            (legacy / "dev").mkdir()
+            (legacy / "packages" / "flutter" / "test").mkdir(parents=True)
+            (legacy / "packages" / "flutter" / "lib").mkdir(parents=True)
+            (legacy / "packages" / "flutter" / "lib" / "a.dart").write_text("a")
+            repo = git.Repo.init(legacy)
+            repo.create_remote("origin", "https://github.com/flutter/flutter")
+
+            run(legacy)
+
+            self.assertFalse((legacy / ".git").exists())
+            self.assertFalse((legacy / "engine").exists())
+            self.assertFalse((legacy / "dev").exists())
+            self.assertFalse((legacy / "packages" / "flutter" / "test").exists())
+            self.assertTrue((legacy / "packages" / "flutter" / "lib" / "a.dart").is_file())
+
+            own = tmp_path / "own"
+            own.mkdir()
+            own_repo = git.Repo.init(own)
+            own_repo.create_remote("origin", "https://example.com/mine.git")
+            run(own)
+            self.assertTrue((own / ".git").exists())
+
+            synthetic = tmp_path / "synthetic"
+            (synthetic / ".git").mkdir(parents=True)
+            (synthetic / ".git" / "termux_synthetic").write_text("{}")
+            run(synthetic)
+            self.assertTrue((synthetic / ".git" / "termux_synthetic").is_file())
+
+    def test_engine_patch_blocks_sdk_self_upgrade(self):
+        """flutter_tools must reject upgrade/downgrade/channel-switch on Termux;
+        the package manager owns SDK versions and the tree is cross-built."""
+        patch = (
+            Path(__file__).parent / "patches" / "engine.patch"
+        ).read_text(encoding="utf-8")
+
+        for command in ("upgrade", "downgrade", "channel"):
+            self.assertIn(
+                f"diff --git a/packages/flutter_tools/lib/src/commands/{command}.dart",
+                patch,
+            )
+            self.assertIn(
+                f"'flutter {command} is disabled on the Termux build",
+                patch,
+            )
+        self.assertIn("pkg upgrade flutter", patch)
 
 
 class FrameworkVersionTest(unittest.TestCase):

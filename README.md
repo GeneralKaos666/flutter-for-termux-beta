@@ -77,6 +77,8 @@ sha256sum -c "${DEB}.sha256"
 test "$(cat "${DEB}.size.txt")" = "$(stat -c '%s' "$DEB")"
 
 apt install "./${DEB}"
+# post_install.sh already ran from the deb's postinst; re-run it only if the
+# install printed a failure or you skipped it with TERMUX_SKIP_POSTINST=true.
 bash $PREFIX/share/flutter/post_install.sh
 ```
 

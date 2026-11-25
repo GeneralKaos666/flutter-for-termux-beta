@@ -57,7 +57,9 @@ sha256sum flutter_3.51.0-0.2.pre-1_aarch64.deb
 dpkg -i flutter_3.51.0-0.2.pre-1_aarch64.deb
 apt --fix-broken install -y
 
-# Required: dpkg only installs files; this step patches the Termux runtime.
+# The deb's postinst already ran this; re-run it only if the install printed a
+# failure, or if you skipped it with TERMUX_SKIP_POSTINST=true. The deb ships no
+# .git, so this step also builds the synthetic repository `flutter` needs.
 bash $PREFIX/share/flutter/post_install.sh
 
 source $PREFIX/etc/profile.d/flutter.sh

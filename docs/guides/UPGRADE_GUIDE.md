@@ -265,6 +265,8 @@ adb push flutter_3.51.0-0.2.pre-1_aarch64.deb /data/local/tmp/
 # Install in Termux
 dpkg -i /data/local/tmp/flutter_3.51.0-0.2.pre-1_aarch64.deb
 apt-get install -f
+# preinst reclaims the legacy .git/build-only trees, postinst runs post_install.sh.
+# Re-run it only if the install printed a failure.
 bash $PREFIX/share/flutter/post_install.sh
 source $PREFIX/etc/profile.d/flutter.sh
 
@@ -397,6 +399,8 @@ flutter-for-termux/
 ├── scripts/
 │   ├── install/
 │   │   ├── post_install.sh   # On-device post-install configuration
+│   │   ├── deb_preinst.sh    # dpkg preinst: reclaim legacy .git/build-only trees
+│   │   ├── deb_postinst.sh   # dpkg postinst: runs post_install.sh under the dpkg lock
 │   │   └── install_termux_flutter.sh  # One-command install script
 │   ├── ci/check_repo.py      # Lightweight repo contract check
 │   ├── device/               # ADB → Termux smoke automation

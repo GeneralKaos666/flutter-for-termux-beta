@@ -4,6 +4,8 @@ import ast
 import base64
 import hashlib
 import io
+import os
+import re
 import string
 import subprocess
 import tarfile
@@ -87,29 +89,75 @@ def safe_eval(expr: str, globals_dict: dict, locals_dict: dict | None = None):
     )
 
 
-def explore_file(src: Path):
+def _glob_to_regex(pattern: str) -> re.Pattern:
+    """Translate a resource ``exclude`` glob into a path-anchored regex.
+
+    ``*`` and ``?`` never cross ``/``; ``**`` does. Patterns are matched
+    against the path relative to the resource's ``source`` root.
+    """
+    out = []
+    i = 0
+    while i < len(pattern):
+        c = pattern[i]
+        if pattern.startswith('**', i):
+            out.append('.*')
+            i += 2
+        elif c == '*':
+            out.append('[^/]*')
+            i += 1
+        elif c == '?':
+            out.append('[^/]')
+            i += 1
+        else:
+            out.append(re.escape(c))
+            i += 1
+    return re.compile('^' + ''.join(out) + '$')
+
+
+def is_excluded(rel, patterns) -> bool:
+    """True when ``rel`` matches an ``exclude:`` entry.
+
+    A trailing ``/**`` also matches its own directory, so ``dev/**`` prunes
+    ``dev`` itself instead of leaving an empty directory behind.
+    """
+    if not patterns:
+        return False
+    posix = Path(rel).as_posix()
+    for pattern in patterns:
+        if _glob_to_regex(pattern).match(posix):
+            return True
+        if pattern.endswith('/**') and _glob_to_regex(pattern[:-3]).match(posix):
+            return True
+    return False
+
+
+def explore_file(src: Path, exclude=()):
     assert src.exists()
 
     if src.is_dir():
         for root, dirs, files in src.walk():
             rel = root.relative_to(src)
+            dirs[:] = [it for it in dirs if not is_excluded(rel/it, exclude)]
             for it in dirs:
                 yield rel/it
             for it in files:
-                yield rel/it
+                if not is_excluded(rel/it, exclude):
+                    yield rel/it
 
 
-def explore_git(src: Path):
+def explore_git(src: Path, exclude=()):
     assert src.is_dir()
 
     for it in Repo(src).tree().traverse():
-        yield it.path
-    git = src/'.git'
-    for it in explore_file(git):
-        yield '.git'/it
+        if is_excluded(it.path, exclude):
+            continue
+        yield Path(it.path)
+    # .git is deliberately never packaged: it is ~490 MiB of history that
+    # `flutter` only needs for `git rev-parse HEAD`. post_install.sh creates a
+    # synthetic repository (tagging the pinned version) when .git is absent.
 
 
-def emit(out, src, git):
+def emit(out, src, git, exclude=()):
     assert isinstance(src, (Path, bytes, list)), src
 
     if isdir := isinstance(src, list):
@@ -117,13 +165,13 @@ def emit(out, src, git):
     if isinstance(src, bytes):
         yield {'out': out, 'src': src}
         return
-    for src, it in explore(src, git):
+    for src, it in explore(src, git, exclude):
         yield {
             'out': out/src.name/it if isdir else out/it,
             'src': src/it}
 
 
-def explore(src, git):
+def explore(src, git, exclude=()):
     explore = explore_git if git else explore_file
 
     if not isinstance(src, list):
@@ -134,7 +182,7 @@ def explore(src, git):
             logger.warning(f'source not found: "{src}"')
             continue
         yield src, Path('.')
-        for it in explore(src):
+        for it in explore(src, exclude):
             yield src, it
 
 
@@ -199,7 +247,17 @@ def tar(path, data):
         data = [data]
     assert hasattr(data, '__iter__'), f'bad data format: "{data}"'
 
-    with tarfile.open(path, mode='w:xz', format=tarfile.GNU_FORMAT, dereference=True) as tar:
+    # preset 9 (64 MiB dictionary) instead of the tarfile default 6: the
+    # duplicate engine snapshots only dedupe inside one LZMA window. Override
+    # with PACKAGE_XZ_PRESET when compression time matters more than bytes.
+    # Duplicates are written as full copies, never as tar hard links: Termux
+    # installs on f2fs /data, where link(2) fails with EACCES, so an LNKTYPE
+    # member makes dpkg abort the whole data tar.
+    preset = int(os.environ.get('PACKAGE_XZ_PRESET', '9'))
+    with tarfile.open(
+        path, mode='w:xz', format=tarfile.GNU_FORMAT, dereference=True,
+        preset=preset
+    ) as tar:
         for it in data:
             out = it.get('out')
             src = it.get('src')
@@ -284,7 +342,7 @@ class Output:
 
 @utils.record
 class Package:
-    def __init__(self, root, arch, control, resource, define=None, **extra):
+    def __init__(self, root, arch, control, resource, define=None, scripts=None, **extra):
         root = Path(root).resolve()
         assert root.is_dir(), f'bad flutter root path: "{root}"'
         self.globals = {
@@ -301,6 +359,7 @@ class Package:
         } if define else {}
         self.control = control
         self.resource = resource
+        self.scripts = scripts or {}
         self.__dict__.update(self.globals)
         self.__dict__.update(self.defines)
 
@@ -315,6 +374,22 @@ class Package:
         for k, v in self.control.items():
             bin.write(self.__format__(f'{k}: {v}\n').encode('utf8'))
         return {'out': 'control', 'src': bin.getvalue()}
+
+    def gen_scripts(self):
+        """Maintainer scripts for the control archive (``preinst``/``postinst``).
+
+        Entries are named exactly as dpkg expects; the source paths are
+        ``package.yaml`` ``scripts:`` values, relative to the build directory.
+        """
+        if not isinstance(self.scripts, dict):
+            raise ValueError(f'bad scripts mapping type: "{type(self.scripts)}"')
+        for name, path in self.scripts.items():
+            if name not in ('preinst', 'postinst', 'prerm', 'postrm', 'config'):
+                raise ValueError(f'bad maintainer script name: "{name}"')
+            src = Path(path)
+            if not src.is_file():
+                raise FileNotFoundError(src)
+            yield {'out': name, 'src': src, 'mod': 0o755}
 
     def gen_resource(self, name=None):
         if isinstance(name, str):
@@ -339,6 +414,12 @@ class Package:
         mod = data.get('mode')
         dep = data.get('define', {})
         ext = {}
+
+        exclude = data.get('exclude') or []
+        if isinstance(exclude, str):
+            exclude = [exclude]
+        if not isinstance(exclude, list):
+            raise ValueError(f'bad exclude type: "{type(exclude)}"')
 
         for k, v in dep.items():
             dep[k] = safe_eval(v, self.globals, self.defines)
@@ -367,7 +448,7 @@ class Package:
             raise ValueError(f'bad source type: "{type(src)}"')
 
         for out in out:
-            for it in emit(out, src, git):
+            for it in emit(out, src, git, exclude):
                 yield it | ext
 
     def test_resource(self, name=None, dest_dir=None):
@@ -418,7 +499,7 @@ class Package:
 
             with open(info, 'wb+') as f:
                 f.write(b'2.0\n')
-            tar(ctrl, self.gen_control())
+            tar(ctrl, [self.gen_control(), *self.gen_scripts()])
             tar(data, self.gen_resource(section))
 
             subprocess.run(

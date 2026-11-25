@@ -230,6 +230,8 @@ def check_yaml_files() -> None:
         "profile",
         "stamps",
         "manifest",
+        "post_install",
+        "flutter_project_config",
     ):
         if key not in resources:
             fail(f"package.yaml missing resource.{key}")
@@ -257,10 +259,54 @@ def check_post_install_contract() -> None:
         "forceNdkDownload() patched to early return",
         "Termux: map Android host to Linux artifacts",
         "Termux: allow linux build",
+        # dpkg postinst guards: apt/pkg must never run while dpkg holds its lock.
+        "TERMUX_POSTINST",
+        "apt install skipped (running from dpkg postinst; apt holds the dpkg lock)",
     ]
     for marker in required:
         if marker not in text:
             fail(f"post_install.sh missing marker: {marker}")
+
+
+def check_maintainer_scripts() -> None:
+    """The deb must configure itself: postinst runs post_install.sh, preinst
+    reclaims payload that older releases shipped but this one excludes."""
+    if yaml is None:
+        return  # check_yaml_files already fails when PyYAML is missing
+    package = ROOT / "package.yaml"
+    if not package.is_file():
+        return  # missing package.yaml is already reported by check_ci_layout
+    data = yaml.safe_load(package.read_text(encoding="utf-8"))
+    scripts = data.get("scripts") if isinstance(data, dict) else None
+    if not isinstance(scripts, dict):
+        fail("package.yaml missing scripts mapping (preinst/postinst)")
+        return
+    for name in ("preinst", "postinst"):
+        path = scripts.get(name)
+        if not path:
+            fail(f"package.yaml missing scripts.{name}")
+        elif not (ROOT / path).is_file():
+            fail(f"package.yaml scripts.{name} does not exist: {path}")
+
+    preinst = ROOT / "scripts" / "install" / "deb_preinst.sh"
+    if preinst.is_file():
+        text = preinst.read_text(encoding="utf-8")
+        for marker in ("termux_synthetic", "packages/*/test"):
+            if marker not in text:
+                fail(f"deb_preinst.sh missing marker: {marker}")
+    else:
+        fail("missing required file: scripts/install/deb_preinst.sh")
+
+    postinst = ROOT / "scripts" / "install" / "deb_postinst.sh"
+    if postinst.is_file():
+        text = postinst.read_text(encoding="utf-8")
+        for marker in ("TERMUX_POSTINST=true", "timeout 1800", "configure) ;;"):
+            if marker not in text:
+                fail(f"deb_postinst.sh missing marker: {marker}")
+        if not text.rstrip().endswith("exit 0"):
+            fail("deb_postinst.sh must end with exit 0 (never fail the package)")
+    else:
+        fail("missing required file: scripts/install/deb_postinst.sh")
 
 
 def load_build_config() -> dict[str, object]:
@@ -478,6 +524,7 @@ def main() -> int:
     check_no_stale_release_commands()
     check_yaml_files()
     check_post_install_contract()
+    check_maintainer_scripts()
     check_installer_contract()
     check_version_drift_contract()
     check_sysroot_lock_contract()

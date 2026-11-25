@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Daily gated autobuild: `beta-refresh.yml` (11:00 UTC) validates patches fail-closed before pushing pins, and `build.yml` (12:00 UTC `gate` job) builds only when the pinned tag equals the latest upstream `.pre` tag and the deb is unreleased: no new tag until conflicts are resolved; manual dispatch still always builds.
 
 ### Infrastructure & CI
+- Slimmed the deb payload: no `.git` history (post_install.sh synthesises a tag-correct repo), `package.yaml` excludes build-only/contributor trees (`engine/`, `dev/`, `docs/`, `examples/`, SDK tests, agent metadata), xz preset 9, and a `--depth=1` framework clone. `deb_preinst.sh` reclaims the legacy history/trees on upgrade; `deb_postinst.sh` runs `post_install.sh` with `TERMUX_POSTINST=1` so apt never runs under the dpkg lock. `flutter upgrade`/`downgrade`/`channel` are now disabled in `engine.patch` because the package owns SDK versions.
 - Lifted `compileSdk`/`targetSdk` default from 34 to 36 (fail-closed ladder 36→35→34) using Termux aapt2 16.0.0.4 (Android Build-Tools), driven by `build.toml` `[android]` and applied per-project by `post_install.sh`/`flutter_project_config.sh`.
 - Centralized installer version/package metadata in `scripts/install/versions_common.sh`, sourced by `lib_common.sh` and drift-verified against `build.toml`.
 - Modernized packages: single JDK (`openjdk-21`), `7zip`, dynamic NDK clang detection, and an `apt-mark hold aapt2` hardening with a `TERMUX_NO_HOLD_AAPT2` opt-out.

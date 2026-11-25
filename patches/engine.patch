@@ -364,3 +364,42 @@ index df3a986a..02f8ae9d 100644
  
  #include "flutter/shell/platform/linux/fl_accessible_node.h"
  #include "flutter/shell/platform/linux/fl_accessible_text_field.h"
+diff --git a/packages/flutter_tools/lib/src/commands/channel.dart b/packages/flutter_tools/lib/src/commands/channel.dart
+--- a/packages/flutter_tools/lib/src/commands/channel.dart
++++ b/packages/flutter_tools/lib/src/commands/channel.dart
+@@ -66,2 +66,10 @@
+     final List<String> rest = argResults?.rest ?? <String>[];
++    // Termux: the SDK is pinned to the beta tag shipped by the package, so
++    // switching the channel would desynchronise the tree from the installed deb.
++    if (rest.isNotEmpty) {
++      throwToolExit(
++        'flutter channel is disabled on the Termux build (channel is fixed to '
++        'beta). Upgrade the package instead: pkg upgrade flutter.',
++      );
++    }
+     switch (rest.length) {
+diff --git a/packages/flutter_tools/lib/src/commands/downgrade.dart b/packages/flutter_tools/lib/src/commands/downgrade.dart
+--- a/packages/flutter_tools/lib/src/commands/downgrade.dart
++++ b/packages/flutter_tools/lib/src/commands/downgrade.dart
+@@ -72,2 +72,8 @@
+   Future<FlutterCommandResult> runCommand() async {
++    // Termux: the package ships no git history, so there is nothing to
++    // downgrade to; the package manager owns SDK versions.
++    throwToolExit(
++      'flutter downgrade is disabled on the Termux build. '
++      'Upgrade the package instead: pkg upgrade flutter.',
++    );
+     if (argResults!.rest.isNotEmpty) {
+diff --git a/packages/flutter_tools/lib/src/commands/upgrade.dart b/packages/flutter_tools/lib/src/commands/upgrade.dart
+--- a/packages/flutter_tools/lib/src/commands/upgrade.dart
++++ b/packages/flutter_tools/lib/src/commands/upgrade.dart
+@@ -103,2 +103,9 @@
+   Future<FlutterCommandResult> runCommand() {
++    // Termux: this SDK is cross-compiled and managed by the Termux package
++    // manager. `flutter upgrade` would overwrite the patched tree with an
++    // upstream checkout plus artifacts that cannot run on this host.
++    throwToolExit(
++      'flutter upgrade is disabled on the Termux build. '
++      'Upgrade the package instead: pkg upgrade flutter.',
++    );
+     final ToolContext(

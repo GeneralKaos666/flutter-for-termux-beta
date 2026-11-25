@@ -54,7 +54,7 @@ Key details:
 | `package.yaml` | Declarative artifact mapping: build output paths → Termux install paths |
 | `utils.py` | Arch map (`arm64→aarch64`), output path resolution, `__MODE__`, Termux detection, `deb_version()`/`snapshot_stamp()` (digit-leading, monotonic deb versions) |
 | `patches/` | Flat, tag-agnostic git patches (engine/dart/skia, plus `dart.new.patch` which is a symlink to `dart.patch` per `test_build.py`) |
-| `scripts/` | Build helpers, `install/post_install.sh`, device smoke, CI checks, e2e test |
+| `scripts/` | Build helpers, `install/post_install.sh` (+ `deb_preinst.sh`/`deb_postinst.sh` maintainer scripts), device smoke, CI checks, e2e test |
 | `docs/CI_CD.md` | CI/CD, runner, and device-lab guide |
 
 ## Lightweight verification
@@ -90,7 +90,7 @@ git diff --check
 1. **Version drift is enforced.** `scripts/ci/check_version_drift.py` and `check_repo.py` scan AGENTS.md, guides, installers, and post_install.sh, every version string / stamped deb name / patch path must match `build.toml` (`[flutter]` pins drive the snapshot stamp) or CI fails. Never hardcode a snapshot-stamped name in new text; derive it or run `check_version_drift.py --fix` to auto-rewrite from `build.toml`.
 2. **Only ARM64 works** for APK gen_snapshot. `arm` fails (32-bit BoringSSL shift overflow), `x64` fails (sysroot mismatch). Packaging is ARM64-only.
 3. **`utils.__MODE__ = ('release', 'debug', 'profile')`**, release first. `Output.any` picks the first existing `flutter/engine/src/out/linux_*_*` dir; it drives which dart-sdk snapshots get packaged. `debuild` asserts at least one output dir exists: build before you package.
-4. **`package.yaml` variables resolve with `safe_eval()`** (package.py) using constrained globals (`root`, `arch`, `output`, `version`, substitution defines). It allowlists literals, names, attribute access, and f-strings: keep template expressions constrained. `$version` is the engine revision from `bin/internal/engine.version`. Don't drop resource keys (`flutter`, `dart_sdk`, `artifacts`, `flutter_linux_gtk_*`, `flutter_patched_sdk*`, `executable`, `profile`, `stamps`, `manifest`), `check_repo.py` asserts them.
+4. **`package.yaml` variables resolve with `safe_eval()`** (package.py) using constrained globals (`root`, `arch`, `output`, `version`, substitution defines). It allowlists literals, names, attribute access, and f-strings: keep template expressions constrained. `$version` is the engine revision from `bin/internal/engine.version`. Don't drop resource keys (`flutter`, `dart_sdk`, `artifacts`, `flutter_linux_gtk_*`, `flutter_patched_sdk*`, `executable`, `profile`, `stamps`, `manifest`, `post_install`, `flutter_project_config`), `check_repo.py` asserts them.
 5. **GN flag `is_termux=true`** activates repo-specific BUILD.gn rules (`-llog -lm`, termux toolchain). `configure()` also passes `custom_sysroot`, `-I` for NDK Vulkan headers + `stubs/` headers, and `-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__` so SwiftShader can weak-import API-29 symbols at API 26.
 6. **`build()` ninja targets are contract**: `flutter` + `flutter/build/archives:artifacts`, `:dart_sdk_archive`, `:flutter_patched_sdk`, `flutter/shell/platform/linux:flutter_gtk`, `flutter/tools/font_subset`. Dropping `flutter_gtk` breaks `flutter build linux`; `test_build.py` asserts this exact target list. `patches/dart.new.patch` is a symlink to `patches/dart.patch`: edit `dart.patch` only.
 7. **`sysroot/` is disposable** (gitignored). Rebuild with `python3 build.py sysroot --arch=arm64`; `sysroot.lock.json` records the pinned package set and is required by `check_repo.py`.
@@ -98,10 +98,11 @@ git diff --check
 9. **`package_version` drives both the control `Version:` and the `.deb` filename: keep them coupled.** dpkg versions must start with a digit; beta pre tags (e.g. `3.49.0-0.2.pre`) pass straight through as `{tag}-{pkg_rel}`. Monotonicity comes from the upstream tag itself: every refresh must rename the asset or apt treats the new build as a downgrade.
 10. **`beta-refresh.yml` probes fail closed.** It parses `flutter --version --machine` (`frameworkRevision` 40-hex, `frameworkCommitDate` as `YYYY-MM-DD HH:MM:SS ±ZZZZ`, `dartSdkVersion`, `devToolsVersion`) with strict regexes and aborts the run on any mismatch: read the failed run's log, fix the parser, never loosen it to "make CI green".
 11. **Edits to tracked `.py`/`.sh` files get whole-file reformatted** (ruff format / shfmt style) by the editing environment: always check `git diff --numstat` after an edit and revert unrelated hunks; prefer precise shell-applied replacements when a minimal diff matters.
+12. **The deb payload is deliberately slim; do not widen it back.** `package.yaml` `exclude:` prunes `engine/**`, `dev/**`, `docs/**`, `examples/**`, `packages/*/test{,_driver}/**`, `.github/**` and agent metadata; `explore_git` never ships `.git` (post_install.sh synthesises a tag-correct repo instead). `package.py` compresses with xz preset 9 (`PACKAGE_XZ_PRESET` overrides) and never emits tar hard links (f2fs rejects `link(2)`, dpkg then aborts). `scripts/install/deb_preinst.sh` reclaims the legacy `.git`/trees on upgrade, `deb_postinst.sh` runs `post_install.sh` with `TERMUX_POSTINST=1` so apt is not called under the dpkg lock. `patches/engine.patch` disables `flutter upgrade`/`downgrade`/`channel` for the same reason. Keep all four in sync: `test_build.py` and `check_repo.py` assert them.
 
 ## Termux runtime
 
-`post_install.sh` (run on-device after `dpkg -i`) auto-fixes:
+`post_install.sh` (run automatically by the deb's postinst after `dpkg -i`/`apt install`; re-run manually if that step reported a failure) auto-fixes:
 - compileSdk default 36 (fail-closed ladder 36→35→34), Termux aapt2 16.0.0.4 loads android-36 `android.jar`; projects are pinned via `flutter_project_config.sh`, overridable with `TERMUX_COMPILE_SDK`/`TERMUX_TARGET_SDK`
 - NDK clang/clang++ wrappers → Termux ARM64 native wrappers (dynamic clang lib version)
 - NDK `llvm-objcopy`/`llvm-strip` → Termux ARM64 native binaries
