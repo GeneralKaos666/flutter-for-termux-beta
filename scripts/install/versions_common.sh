@@ -11,9 +11,9 @@ export FLUTTER_VERSION="3.51.0-0.2.pre"
 # tilde form so beta snapshots sort above the last stable but below the next
 # final (3.47.6~0.0.pre+main.<snap>-1 > 3.47.5-1, < 3.47.6-1).
 export FLUTTER_FRAMEWORK_VERSION="3.51.0-0.2.pre"
-export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-1}"
+export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-2}"
 export FLUTTER_SNAPSHOT="20261118.8f89a71"
-export RELEASE_TAG="v3.51.0-0.2.pre-1"
+export RELEASE_TAG="v3.51.0-0.2.pre-2"
 # No hosted beta-channel release exists yet: refresh after the first beta
 # build or pass FLUTTER_DEB_SHA256. Installers fail closed until then.
 export EXPECTED_SHA256="TBD-refresh-after-first-beta-build"

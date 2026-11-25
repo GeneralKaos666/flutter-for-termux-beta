@@ -478,7 +478,7 @@ case "${_DEB_TAG}" in
 	fi
 	;;
 esac
-FLUTTER_DEB_NAME="${FLUTTER_DEB_NAME:-flutter_${_DEB_TAG}-${FLUTTER_PKG_REL:-1}_aarch64.deb}"
+FLUTTER_DEB_NAME="${FLUTTER_DEB_NAME:-flutter_${_DEB_TAG}-${FLUTTER_PKG_REL:-2}_aarch64.deb}"
 FLUTTER_DEB_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/${FLUTTER_DEB_NAME}"
 
 # Snapshot existing package state for rollback
