@@ -13,7 +13,7 @@ installs into a Termux `$PREFIX` and enables `flutter run`,
 | Flutter   | beta channel |
 | Dart      | 3.14.0-211.1.beta |
 | Architecture | aarch64 (ARM64) only |
-| Package   | `flutter_3.51.0-0.2.pre-2_aarch64.deb` |
+| Package   | `flutter_3.51.0-0.2.pre-3_aarch64.deb` |
 
 Release assets include:
 - `flutter_<tag>-<pkg_rel>_aarch64.deb`
@@ -24,8 +24,8 @@ Release assets include:
 Download (after the first beta build publishes):
 
 ```bash
-RELEASE_TAG=v3.51.0-0.2.pre-2
-DEB="flutter_3.51.0-0.2.pre-2_aarch64.deb"
+RELEASE_TAG=v3.51.0-0.2.pre-3
+DEB="flutter_3.51.0-0.2.pre-3_aarch64.deb"
 BASE_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/"
 
 curl -fSL -o "$DEB" "${BASE_URL}${DEB}"
@@ -33,14 +33,14 @@ curl -fSL -o "${DEB}.sha256" "${BASE_URL}${DEB}.sha256"
 sha256sum -c "${DEB}.sha256"
 ```
 
-`v3.51.0-0.2.pre-2` is published with
-`flutter_3.51.0-0.2.pre-2_aarch64.deb` (SHA256
-`26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733`).
-Installers verify that hash and fail closed on a mismatch. To verify a deb
-you built yourself, override the pin per run without editing the repo:
+`v3.51.0-0.2.pre-3` has no hosted release yet. Build the deb yourself
+(see [Build guide](docs/guides/BUILD_GUIDE.md)) or wait for the hosted
+build. Installers fail closed on `EXPECTED_SHA256` until the published hash
+refreshes. To verify a deb you built yourself, override the pin per run
+without editing the repo:
 
 ```bash
-FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb | awk '{print $1}')" \
+FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-3_aarch64.deb | awk '{print $1}')" \
   bash install_flutter_complete.sh
 ```
 
@@ -70,8 +70,8 @@ You get the release package plus the on-device Android SDK/toolchain
 ### Manual install
 
 ```bash
-RELEASE_TAG=v3.51.0-0.2.pre-2
-DEB="flutter_3.51.0-0.2.pre-2_aarch64.deb"
+RELEASE_TAG=v3.51.0-0.2.pre-3
+DEB="flutter_3.51.0-0.2.pre-3_aarch64.deb"
 BASE_URL="https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/${RELEASE_TAG}/"
 
 curl -fSL -o "$DEB" "${BASE_URL}${DEB}"

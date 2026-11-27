@@ -151,7 +151,8 @@ Fixes Skia compilation errors on the ARM64 bionic environment.
 <details>
 <summary><b>ARM64-only APK: install-time CLI modification</b></summary>
 
-`post_install.sh` modifies `build_apk.dart` / `build_aar.dart` / `build_appbundle.dart` and the Flutter Gradle plugin
+`post_install.sh` modifies `build_apk.dart` and the shared `AndroidBuildOptionsBundle` in
+`runner/options/common_options.dart` (used by `build aar` / `build appbundle`) plus the Flutter Gradle plugin
 so that the default `targetPlatform` is `[arm64]` only (disables arm/x64 gen_snapshot on Termux).
 
 > ⚠️ This is applied to the installed Flutter SDK on the device, not at build time.
@@ -175,7 +176,7 @@ python3 build.py patch --file=./patches/skia.patch --path=engine/src/flutter/thi
 ```
 
 > `post_install.sh` enforces ARM64-only APK at install time
-> (via the `build_apk`, `build_aar`, `build_appbundle`, and `plugin_utils` patches),
+> (via the `build_apk`, `android_target_platforms`, and `plugin_utils` patches),
 > not as a build-time patch.
 
 ---
@@ -247,9 +248,9 @@ python3 build.py debuild --arch=arm64
 This will:
 1. Sync the latest `scripts/`, `patches/`, `package.yaml`, `build.toml` from Windows to WSL
 2. Collect all build outputs according to `package.yaml`
-3. Package them into `flutter_3.51.0-0.2.pre-2_aarch64.deb` (derived from `build.toml` via `Build.output('arm64')`; never hardcode a stamped name)
+3. Package them into `flutter_3.51.0-0.2.pre-3_aarch64.deb` (derived from `build.toml` via `Build.output('arm64')`; never hardcode a stamped name)
 
-> Output path: `release/flutter_3.51.0-0.2.pre-2_aarch64.deb`
+> Output path: `release/flutter_3.51.0-0.2.pre-3_aarch64.deb`
 
 ---
 
@@ -257,13 +258,13 @@ This will:
 
 ```powershell
 # Copy from WSL to Windows
-Copy-Item "\\wsl.localhost\Ubuntu\home\YOUR_USER\termux-flutter\release\flutter_3.51.0-0.2.pre-2_aarch64.deb" .
+Copy-Item "\\wsl.localhost\Ubuntu\home\YOUR_USER\termux-flutter\release\flutter_3.51.0-0.2.pre-3_aarch64.deb" .
 
 # Push to the device
-adb push flutter_3.51.0-0.2.pre-2_aarch64.deb /data/local/tmp/
+adb push flutter_3.51.0-0.2.pre-3_aarch64.deb /data/local/tmp/
 
 # Install in Termux
-dpkg -i /data/local/tmp/flutter_3.51.0-0.2.pre-2_aarch64.deb
+dpkg -i /data/local/tmp/flutter_3.51.0-0.2.pre-3_aarch64.deb
 apt-get install -f
 # preinst reclaims the legacy .git/build-only trees, postinst runs post_install.sh.
 # Re-run it only if the install printed a failure.
@@ -302,7 +303,7 @@ If the new Flutter version changes any of these locations, update them:
 ```powershell
 # Update version
 $VER = "3.49.0-0.2.pre"
-$DEB = "flutter_3.51.0-0.2.pre-2_aarch64.deb"
+$DEB = "flutter_3.51.0-0.2.pre-3_aarch64.deb"
 
 # Create the release
 gh release create "$VER" `

@@ -107,7 +107,7 @@ The `build()` ninja invocation includes `flutter/build/archives:dart_sdk_archive
 python3 build.py debuild --arch=arm64
 ```
 
-Output: `release/flutter_3.51.0-0.2.pre-2_aarch64.deb`
+Output: `release/flutter_3.51.0-0.2.pre-3_aarch64.deb`
 
 ---
 
@@ -228,11 +228,11 @@ Flag dedup_instructions is false in snapshot, but dedup_instructions is always t
 ```bash
 # 1. Transfer the deb to the device
 # Use PowerShell (Git Bash will corrupt the path)
-adb push flutter_3.51.0-0.2.pre-2_aarch64.deb /sdcard/Download/
+adb push flutter_3.51.0-0.2.pre-3_aarch64.deb /sdcard/Download/
 
 # 2. Install it in Termux
 pkg install x11-repo
-dpkg -i /sdcard/Download/flutter_3.51.0-0.2.pre-2_aarch64.deb
+dpkg -i /sdcard/Download/flutter_3.51.0-0.2.pre-3_aarch64.deb
 bash $PREFIX/share/flutter/post_install.sh
 apt-get install -f
 
@@ -282,13 +282,13 @@ run it with `--fix` to auto-rewrite drifted refs from `build.toml`):
 
 ```bash
 # Final artifact location
-release/flutter_3.51.0-0.2.pre-2_aarch64.deb
+release/flutter_3.51.0-0.2.pre-3_aarch64.deb
 ```
 
 ### 3. Upload to GitHub Releases
 
 1. Create a new Release: `main`
-2. Upload the deb file: `flutter_3.51.0-0.2.pre-2_aarch64.deb`
+2. Upload the deb file: `flutter_3.51.0-0.2.pre-3_aarch64.deb`
 3. Fill in the Release Notes
 
 ### 4. Verify the One-Click Install Script
@@ -367,7 +367,7 @@ flutter-for-termux/
 
 ### Unreleased (tracking main)
 - Current pins: Flutter `3.49.0-0.2.pre` (beta), Dart `3.14.0 (build 3.14.0-211.1.beta)`, framework `38ec981` (`2026-09-30`), DevTools `2.61.0`, NDK r29, API 26, compileSdk/targetSdk 36.
-- The `v3.51.0-0.2.pre-2` beta release is published; size/SHA are pinned in `build.toml` and installers fail closed on a mismatch.
+- The `v3.51.0-0.2.pre-3` beta release publishes from the hosted build; size/SHA are pinned in `build.toml` after the first build and installers fail closed on a mismatch.
 
 ### 2026-06-01
 - Updated this document to the Flutter 3.47.5 / Dart 3.13.4 state

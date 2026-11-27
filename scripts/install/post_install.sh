@@ -288,19 +288,14 @@ patch_build_apk() {
 }
 register_patch "build_apk" "$FLUTTER_ROOT/packages/flutter_tools/lib/src/commands/build_apk.dart" patch_build_apk
 
-patch_build_aar() {
+patch_android_target_platforms() {
+	# Flutter 3.51 moved the default Android target platforms out of
+	# build_aar.dart/build_appbundle.dart into AndroidBuildOptionsBundle.
 	if grep -F -q "defaultsTo: <String>['android-arm64']" "$1"; then return 0; fi
-	grep -q "defaultsTo: <String>" "$1" || return 1
-	sed -i "s/defaultsTo: <String>\['android-arm', 'android-arm64', 'android-x64'\]/defaultsTo: <String>['android-arm64']/" "$1"
+	grep -q "defaultsTo: _kAndroidTargetPlatforms" "$1" || return 1
+	sed -i "s#defaultsTo: _kAndroidTargetPlatforms,#defaultsTo: <String>['android-arm64'], // Termux: only arm64 artifacts ship#" "$1"
 }
-register_patch "build_aar" "$FLUTTER_ROOT/packages/flutter_tools/lib/src/commands/build_aar.dart" patch_build_aar
-
-patch_build_appbundle() {
-	if grep -F -q "defaultsTo: <String>['android-arm64']" "$1"; then return 0; fi
-	grep -q "defaultsTo: <String>" "$1" || return 1
-	sed -i "s/defaultsTo: <String>\['android-arm', 'android-arm64', 'android-x64'\]/defaultsTo: <String>['android-arm64']/" "$1"
-}
-register_patch "build_appbundle" "$FLUTTER_ROOT/packages/flutter_tools/lib/src/commands/build_appbundle.dart" patch_build_appbundle
+register_patch "android_target_platforms" "$FLUTTER_ROOT/packages/flutter_tools/lib/src/runner/options/common_options.dart" patch_android_target_platforms
 
 patch_plugin_utils() {
 	# forceNdkDownload() patched to early return
@@ -327,9 +322,9 @@ patch_artifacts() {
 register_patch "artifacts" "$FLUTTER_ROOT/packages/flutter_tools/lib/src/artifacts.dart" patch_artifacts
 
 patch_build_info() {
-	if grep -F -q "globals.platform.isAndroid" "$1"; then return 0; fi
-	grep -q "if (globals.platform.isLinux)" "$1" || return 1
-	sed -i "s#if (globals.platform.isLinux) {#if (globals.platform.isLinux || globals.platform.isAndroid) { // Termux: Android host uses Linux artifacts.#" "$1"
+	if grep -F -q "platform.isAndroid" "$1"; then return 0; fi
+	grep -q "if (platform.isLinux) {" "$1" || return 1
+	sed -i "s#if (platform.isLinux) {#if (platform.isLinux || platform.isAndroid) { // Termux: Android host uses Linux artifacts.#" "$1"
 }
 register_patch "build_info" "$FLUTTER_ROOT/packages/flutter_tools/lib/src/build_info.dart" patch_build_info
 

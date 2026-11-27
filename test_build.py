@@ -846,14 +846,19 @@ def test_expected_sha256_override_precedence():
 
     default = resolved()
     assert default, "EXPECTED_SHA256 must never resolve empty (fail closed)"
-    assert re.fullmatch(r"[0-9a-f]{64}", default), (
-        "pinned default must be a published sha256; refresh it after a release"
-    )
     with open("build.toml", "rb") as f:
         pinned = tomllib.load(f)["flutter"].get("sha256")
     if pinned:
+        assert re.fullmatch(r"[0-9a-f]{64}", default), (
+            "pinned default must be a published sha256; refresh it after a release"
+        )
         assert default == pinned, (
             "versions_common.sh default drifted from build.toml [flutter] sha256"
+        )
+    else:
+        assert not re.fullmatch(r"[0-9a-f]{64}", default), (
+            "no published sha256 yet: keep the fail-closed placeholder until the "
+            "first build of this package revision publishes"
         )
     assert resolved(EXPECTED_SHA256="a" * 64) == "a" * 64
     assert resolved(FLUTTER_DEB_SHA256="b" * 64) == "b" * 64

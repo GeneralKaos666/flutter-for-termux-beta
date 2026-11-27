@@ -1,6 +1,6 @@
 # Termux Flutter beta Installation Guide
 
-This guide covers `flutter_3.51.0-0.2.pre-2_aarch64.deb` on ARM64 Termux:
+This guide covers `flutter_3.51.0-0.2.pre-3_aarch64.deb` on ARM64 Termux:
 
 - `flutter doctor -v`
 - `flutter create`
@@ -17,8 +17,8 @@ This guide covers `flutter_3.51.0-0.2.pre-2_aarch64.deb` on ARM64 Termux:
 | Dart VM (`dartvm`) | post-install `dartvm` resolves to Dart 3.15.0-118.1.beta (`android_arm64`) |
 
 | Test device | Samsung SM-X716B / Android 16 / ARM64 (reference smoke device) |
-| deb size | 117714504 bytes (~112 MiB) |
-| SHA256 | `26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733` |
+| deb size | `TBD (refresh after the first build of this revision)` |
+| SHA256 | `TBD (refresh after the first build of this revision)` |
 
 ## System Requirements
 
@@ -46,17 +46,17 @@ pkg update -y
 pkg install -y x11-repo git wget curl unzip openjdk-21 aapt2 android-tools cmake ninja clang
 
 cd ~
-# NOTE (beta): v3.51.0-0.2.pre-2 is published. The installer verifies the
-# SHA256 pin and fails closed on a mismatch.
-wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-2/flutter_3.51.0-0.2.pre-2_aarch64.deb
-sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb
-# Expected: 26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733
+# NOTE (beta): v3.51.0-0.2.pre-3 has no published hash yet. The installer
+# verifies the SHA256 pin and fails closed until the pin refreshes.
+wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-3/flutter_3.51.0-0.2.pre-3_aarch64.deb
+sha256sum flutter_3.51.0-0.2.pre-3_aarch64.deb
+# Expected: TBD (refresh after the first build of this revision)
 # For a deb you built yourself, pass the hash per run instead of editing the
 # repo:
-#   FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb | awk '{print $1}')" \
+#   FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-3_aarch64.deb | awk '{print $1}')" \
 #     bash install_flutter_complete.sh
 
-dpkg -i flutter_3.51.0-0.2.pre-2_aarch64.deb
+dpkg -i flutter_3.51.0-0.2.pre-3_aarch64.deb
 apt --fix-broken install -y
 
 # The deb's postinst already ran this; re-run it only if the install printed a
