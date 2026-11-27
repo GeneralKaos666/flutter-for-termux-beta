@@ -11,6 +11,9 @@ dart_version = '3.15.0 (build 3.15.0-118.1.beta)'
 framework_revision = '8f89a71e053b014bf8b7c19d19a4de35ea10ddbd'
 framework_commit_date = '2026-11-18 18:24:20 -0500'
 devtools_version = '2.62.0'
+# SHA256 of the published flutter_<tag>-<pkg_rel>_aarch64.deb release asset.
+# Installers fail closed when this is absent or does not match the download.
+sha256 = '26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733'
 
 [ndk]
 api = 26 # >=26

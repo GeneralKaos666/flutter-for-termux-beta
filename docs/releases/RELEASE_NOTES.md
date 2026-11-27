@@ -9,11 +9,11 @@ This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2
 | Item | Value |
 |------|-------|
 | Package | `flutter_3.51.0-0.2.pre-2_aarch64.deb` |
-| Size | `TBD (refresh on first beta build)` |
-| SHA256 | `TBD (refresh on first beta build)` |
-| Flutter | 3.49.0-0.2.pre (beta) |
-| Flutter Tools Dart | 3.14.0-211.1.beta |
-| Dart VM | post-install `dartvm` resolves to Dart 3.14.0-211.1.beta (`android_arm64`) |
+| Size | `117714504 bytes (~112 MiB)` |
+| SHA256 | `26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733` |
+| Flutter | 3.51.0-0.2.pre (beta) |
+| Flutter Tools Dart | 3.15.0-118.1.beta |
+| Dart VM | post-install `dartvm` resolves to Dart 3.15.0-118.1.beta (`android_arm64`) |
 | Target host | Termux / Android bionic / ARM64 |
 
 ## Install
@@ -21,8 +21,7 @@ This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2
 ```bash
 pkg update -y
 pkg install -y x11-repo wget openjdk-21 7zip
-# NOTE (beta): no hosted beta-channel release exists yet. Build the
-# deb yourself (see BUILD_GUIDE.md) and adb push it instead of wget.
+# NOTE (beta): v3.51.0-0.2.pre-2 is published with this asset.
 wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-2/flutter_3.51.0-0.2.pre-2_aarch64.deb
 dpkg -i flutter_3.51.0-0.2.pre-2_aarch64.deb
 apt --fix-broken install -y

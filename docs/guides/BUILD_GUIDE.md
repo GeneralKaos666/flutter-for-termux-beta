@@ -6,7 +6,8 @@ Build a Flutter deb package with Android gen_snapshot from scratch.
 
 This branch (`beta`) builds the Flutter `main` channel instead of
 stable: `build.toml [flutter] tag` is `main`, so the produced deb is
-`flutter_3.51.0-0.2.pre-2_aarch64.deb`. There are no hosted `main`-channel releases.
+`flutter_3.51.0-0.2.pre-2_aarch64.deb`. The beta pre-release
+`v3.51.0-0.2.pre-2` is hosted; `main`-channel releases are not.
 
 - Refresh loop: `python3 build.py clone --force`, verify `patches/*.patch`
   still apply (a shallow `main` checkout plus the DEPS-pinned dart/skia
@@ -33,10 +34,10 @@ stable: `build.toml [flutter] tag` is `main`, so the produced deb is
 | Item | Value |
 |------|----|
 | Flutter tag | `3.51.0-0.2.pre` |
-| Engine revision | `TBD (refresh on first beta build)` |
+| Engine revision | `8f89a71` |
 | Package | `flutter_3.51.0-0.2.pre-2_aarch64.deb` |
-| Package size | `TBD (refresh on first beta build)` |
-| SHA256 | `TBD (refresh on first beta build)` |
+| Package size | `117714504 bytes (~112 MiB)` |
+| SHA256 | `26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733` |
 | Device smoke | Samsung SM-X716B / Android 16 / Termux |
 
 Note these (first observed around 3.47.5) on this branch:

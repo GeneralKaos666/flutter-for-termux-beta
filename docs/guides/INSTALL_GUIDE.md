@@ -12,13 +12,13 @@ This guide covers `flutter_3.51.0-0.2.pre-2_aarch64.deb` on ARM64 Termux:
 
 | Item | Value |
 |------|-------|
-| Flutter | 3.49.0-0.2.pre (framework `38ec981`, `2026-09-30 16:52:04 +0000`) |
-| Flutter Tools Dart | 3.14.0-211.1.beta |
-| Dart VM (`dartvm`) | post-install `dartvm` resolves to Dart 3.14.0-211.1.beta (`android_arm64`) |
+| Flutter | 3.51.0-0.2.pre (framework `8f89a71`, `2026-11-18 18:24:20 -0500`) |
+| Flutter Tools Dart | 3.15.0-118.1.beta |
+| Dart VM (`dartvm`) | post-install `dartvm` resolves to Dart 3.15.0-118.1.beta (`android_arm64`) |
 
 | Test device | Samsung SM-X716B / Android 16 / ARM64 (reference smoke device) |
-| deb size | TBD (refresh on first beta build) |
-| SHA256 | `TBD (refresh on first beta build)` |
+| deb size | 117714504 bytes (~112 MiB) |
+| SHA256 | `26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733` |
 
 ## System Requirements
 
@@ -46,14 +46,13 @@ pkg update -y
 pkg install -y x11-repo git wget curl unzip openjdk-21 aapt2 android-tools cmake ninja clang
 
 cd ~
-# NOTE (beta): no hosted beta-channel release exists yet. Build the
-# deb yourself (see BUILD_GUIDE.md) and adb push it, e.g.:
-# adb push flutter_3.51.0-0.2.pre-2_aarch64.deb /data/local/tmp/
+# NOTE (beta): v3.51.0-0.2.pre-2 is published. The installer verifies the
+# SHA256 pin and fails closed on a mismatch.
 wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-2/flutter_3.51.0-0.2.pre-2_aarch64.deb
 sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb
-# No published hash to confirm against yet; the installer fails closed until
-# EXPECTED_SHA256 is refreshed after the first beta build. For a deb you built
-# yourself, pass the hash per run instead of editing the repo:
+# Expected: 26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733
+# For a deb you built yourself, pass the hash per run instead of editing the
+# repo:
 #   FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb | awk '{print $1}')" \
 #     bash install_flutter_complete.sh
 

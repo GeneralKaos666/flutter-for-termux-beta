@@ -179,12 +179,12 @@ self-hosted **Build deb (self-hosted)** workflow instead.
 
 Manual workflow: **Device smoke (self-hosted)**
 
-No hosted beta-channel release exists yet. After the first beta build
-publishes, test that release asset with the default input:
+The `v3.51.0-0.2.pre-2` beta release is published. Test that release
+asset with the default input:
 
 ```text
-deb_url: https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.49.0-0.2.pre-1/flutter_3.49.0-0.2.pre-1_aarch64.deb
-expected_sha256: TBD (refresh after the first beta build; installers fail closed until then)
+deb_url: https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-2/flutter_3.51.0-0.2.pre-2_aarch64.deb
+expected_sha256: 26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733
 ```
 
 Required self-hosted environment:

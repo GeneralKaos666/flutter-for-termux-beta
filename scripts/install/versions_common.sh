@@ -14,10 +14,9 @@ export FLUTTER_FRAMEWORK_VERSION="3.51.0-0.2.pre"
 export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-2}"
 export FLUTTER_SNAPSHOT="20261118.8f89a71"
 export RELEASE_TAG="v3.51.0-0.2.pre-2"
-# No hosted beta-channel release exists yet: refresh after the first beta
-# build. Installers fail closed until then. Override per run without editing
-# this file: FLUTTER_DEB_SHA256=<hash> (wins) or EXPECTED_SHA256=<hash>.
-export EXPECTED_SHA256="${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-TBD-refresh-after-first-beta-build}}"
+# Published with the v3.51.0-0.2.pre-2 release. Override per run without
+# editing this file: FLUTTER_DEB_SHA256 (wins) or a pre-set EXPECTED_SHA256.
+export EXPECTED_SHA256="${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-26d9546a74517162e608089bcda34a16ac456ec402071d0fb796d16ecb4b0733}}"
 # dpkg versions must start with a digit. Stable and pre tags pass through; branch
 # snapshots use the framework version in Debian tilde form plus the snapshot
 # stamp (3.47.6~0.0.pre+main.YYYYMMDD.hash) so installs move forward from the
