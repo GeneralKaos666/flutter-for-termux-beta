@@ -12,7 +12,7 @@ export HOME=/data/data/com.termux/files/home
 export TMPDIR=$PREFIX/tmp
 export RELEASE_TAG=${RELEASE_TAG:-v3.51.0-0.2.pre-2}
 export FLUTTER_VERSION=${FLUTTER_VERSION:-3.51.0-0.2.pre}
-export EXPECTED_SHA256=${EXPECTED_SHA256:-${FLUTTER_DEB_SHA256:-}}
+export EXPECTED_SHA256=${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-}}
 
 source "$(dirname "$0")/../install/lib_common.sh" || {
 	echo "Fetching lib_common.sh..."

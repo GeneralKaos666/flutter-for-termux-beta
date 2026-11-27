@@ -36,7 +36,13 @@ sha256sum -c "${DEB}.sha256"
 No hosted beta-channel release exists yet. Build the deb yourself
 (see [Build guide](docs/guides/BUILD_GUIDE.md)) and `adb push` it until
 the first beta build publishes. Installers fail closed on
-`EXPECTED_SHA256` until the hash refreshes.
+`EXPECTED_SHA256` until the hash refreshes. To verify a deb you built
+yourself, override the pin per run without editing the repo:
+
+```bash
+FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb | awk '{print $1}')" \
+  bash install_flutter_complete.sh
+```
 
 ## Install
 

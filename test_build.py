@@ -824,5 +824,33 @@ def test_patch_rebase_evidence_matches_pin():
     assert "skia=parse-OK" in text
 
 
+def test_expected_sha256_override_precedence():
+    """FLUTTER_DEB_SHA256 beats EXPECTED_SHA256, and the pin stays fail-closed."""
+    script = 'source scripts/install/versions_common.sh; printf "%s" "$EXPECTED_SHA256"'
+
+    def resolved(**overrides):
+        env = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in ("FLUTTER_DEB_SHA256", "EXPECTED_SHA256")
+        }
+        env.update(overrides)
+        try:
+            r = subprocess.run(
+                ["bash", "-c", script], capture_output=True, text=True, env=env
+            )
+        except FileNotFoundError:
+            raise unittest.SkipTest("bash not available")
+        assert r.returncode == 0, r.stderr
+        return r.stdout
+
+    default = resolved()
+    assert default, "EXPECTED_SHA256 must never resolve empty (fail closed)"
+    assert default.startswith("TBD-") or re.fullmatch(r"[0-9a-f]{64}", default)
+    assert resolved(EXPECTED_SHA256="a" * 64) == "a" * 64
+    assert resolved(FLUTTER_DEB_SHA256="b" * 64) == "b" * 64
+    assert resolved(EXPECTED_SHA256="a" * 64, FLUTTER_DEB_SHA256="b" * 64) == "b" * 64
+
+
 if __name__ == "__main__":
     unittest.main()

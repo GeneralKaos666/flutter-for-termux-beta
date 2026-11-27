@@ -52,7 +52,10 @@ cd ~
 wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-2/flutter_3.51.0-0.2.pre-2_aarch64.deb
 sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb
 # No published hash to confirm against yet; the installer fails closed until
-# EXPECTED_SHA256 is refreshed after the first beta build.
+# EXPECTED_SHA256 is refreshed after the first beta build. For a deb you built
+# yourself, pass the hash per run instead of editing the repo:
+#   FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-2_aarch64.deb | awk '{print $1}')" \
+#     bash install_flutter_complete.sh
 
 dpkg -i flutter_3.51.0-0.2.pre-2_aarch64.deb
 apt --fix-broken install -y
