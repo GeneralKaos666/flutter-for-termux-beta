@@ -865,5 +865,62 @@ def test_expected_sha256_override_precedence():
     assert resolved(EXPECTED_SHA256="a" * 64, FLUTTER_DEB_SHA256="b" * 64) == "b" * 64
 
 
+def test_pin_release_sha_updates_every_pin():
+    import sys
+    import tempfile
+    from pathlib import Path
+
+    root = Path(tempfile.mkdtemp())
+    (root / "build.toml").write_text(
+        "[flutter]\ntag = '1.2.3'\nsha256 = ''\n[package]\npkg_rel = '1'\n",
+        encoding="utf-8",
+    )
+    installer = root / "scripts/install/versions_common.sh"
+    installer.parent.mkdir(parents=True)
+    installer.write_text(
+        'export EXPECTED_SHA256="${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-TBD}}"}\n',
+        encoding="utf-8",
+    )
+    lib = root / "scripts/install/lib_common.sh"
+    lib.write_text(
+        'export EXPECTED_SHA256="${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-TBD}}"}\n',
+        encoding="utf-8",
+    )
+    e2e = root / "scripts/test/gh_e2e_test.sh"
+    e2e.parent.mkdir(parents=True)
+    e2e.write_text(
+        "export EXPECTED_SHA256=${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-TBD}}\n",
+        encoding="utf-8",
+    )
+    (root / "README.md").write_text("nothing pinned\n", encoding="utf-8")
+    guide = root / "docs/guides/GUIDE.md"
+    guide.parent.mkdir(parents=True)
+    guide.write_text(
+        "| Size | `TBD` |\n| SHA256 | `TBD` |\n# Expected: TBD\n", encoding="utf-8"
+    )
+    sha = "a" * 64
+
+    def run(*args):
+        return subprocess.run(
+            [sys.executable, "scripts/ci/pin_release_sha.py", "--root", str(root), *args],
+            capture_output=True,
+            text=True,
+        )
+
+    assert run("--sha256", sha, "--size", "1234", "--check").returncode == 1
+    result = run("--sha256", sha, "--size", "1234")
+    assert result.returncode == 0, result.stderr
+    toml = (root / "build.toml").read_text(encoding="utf-8")
+    assert f"sha256 = '{sha}'" in toml
+    assert "sha256_asset = 'flutter_1.2.3-1_aarch64.deb'" in toml
+    for path in (installer, lib, e2e):
+        assert sha in path.read_text(encoding="utf-8")
+    guide_text = guide.read_text(encoding="utf-8")
+    assert f"| SHA256 | `{sha}` |" in guide_text
+    assert "# Expected: " + sha in guide_text
+    assert "1234 bytes" in guide_text
+    assert run("--sha256", sha, "--size", "1234", "--check").returncode == 0
+
+
 if __name__ == "__main__":
     unittest.main()

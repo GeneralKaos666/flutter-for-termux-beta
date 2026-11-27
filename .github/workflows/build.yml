@@ -410,3 +410,29 @@ jobs:
           overwrite_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pin published SHA256
+        if: steps.release_guard.outputs.should_publish == 'true' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEB='${{ steps.artifact.outputs.deb }}'
+          python scripts/ci/pin_release_sha.py --deb "$DEB"
+          if git diff --quiet; then
+            echo "release pins already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build.toml README.md docs scripts/install scripts/test
+          git commit -m "chore(release): pin published deb SHA256"
+          # GITHUB_TOKEN pushes do not retrigger workflows, so this cannot loop.
+          for attempt in 1 2 3; do
+            if git fetch origin main && git rebase --autostash origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep 5
+          done
+          echo "failed to push the SHA256 pin after 3 attempts" >&2
+          exit 1

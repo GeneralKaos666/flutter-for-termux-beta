@@ -54,7 +54,7 @@ CI runs the full engine build on the GitHub-hosted `ubuntu-latest` runner
 (`build.yml`); PRs run lightweight checks first:
 
 ```bash
-python -m py_compile build.py package.py sysroot.py utils.py scripts/ci/check_repo.py scripts/ci/check_version_drift.py scripts/ci/verify_release_asset.py scripts/ci/generate_versions.py
+python -m py_compile build.py package.py sysroot.py utils.py scripts/ci/check_repo.py scripts/ci/check_version_drift.py scripts/ci/verify_release_asset.py scripts/ci/pin_release_sha.py scripts/ci/generate_versions.py
 bash -n install_flutter_complete.sh scripts/install/*.sh scripts/test/gh_e2e_test.sh scripts/device/termux_smoke.sh
 python scripts/ci/generate_versions.py --check
 python scripts/ci/check_repo.py

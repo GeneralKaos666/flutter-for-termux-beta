@@ -70,7 +70,7 @@ Therefore:
 `ci.yml` runs on every PR and push to `main`:
 
 ```text
-python -m py_compile build.py package.py sysroot.py utils.py scripts/ci/check_repo.py scripts/ci/check_version_drift.py scripts/ci/verify_release_asset.py scripts/ci/generate_versions.py
+python -m py_compile build.py package.py sysroot.py utils.py scripts/ci/check_repo.py scripts/ci/check_version_drift.py scripts/ci/verify_release_asset.py scripts/ci/pin_release_sha.py scripts/ci/generate_versions.py
 bash -n install_flutter_complete.sh scripts/install/*.sh scripts/test/gh_e2e_test.sh scripts/device/termux_smoke.sh
 PowerShell parser check for scripts/device/run_termux_smoke.ps1
 python scripts/ci/generate_versions.py --check
@@ -169,8 +169,14 @@ The release flow:
 2. **Build**: use the refresh-triggered gated run when anything is new (daily
    fallback covers misses), or dispatch
    it through `workflow_dispatch` on the chosen commit/tag.
-3. Run device smoke against the produced or published `.deb`.
-4. Let **Release check** verify the release asset metadata after publish/edit.
+3. The publish job then runs `scripts/ci/pin_release_sha.py --deb <asset>` and
+   commits the published SHA256 (`build.toml` `[flutter] sha256`/`sha256_asset`,
+   installer defaults, doc tables) back to `main`, so installers stop failing
+   closed as soon as the asset exists. A pin naming an older `sha256_asset` is
+   skipped by the pre-publish check, so a fresh `pkg_rel` builds before its pin
+   exists.
+4. Run device smoke against the produced or published `.deb`.
+5. Let **Release check** verify the release asset metadata after publish/edit.
 
 If you need a dry build (no auto publish) or richer build metadata, use the
 self-hosted **Build deb (self-hosted)** workflow instead.
@@ -272,7 +278,7 @@ Find the governance rules for the `main` branch in `.github/rulesets/main_protec
 Fast local checks:
 
 ```bash
-python -m py_compile build.py package.py sysroot.py utils.py scripts/ci/check_repo.py scripts/ci/check_version_drift.py scripts/ci/verify_release_asset.py scripts/ci/generate_versions.py
+python -m py_compile build.py package.py sysroot.py utils.py scripts/ci/check_repo.py scripts/ci/check_version_drift.py scripts/ci/verify_release_asset.py scripts/ci/pin_release_sha.py scripts/ci/generate_versions.py
 bash -n install_flutter_complete.sh scripts/install/*.sh scripts/test/gh_e2e_test.sh scripts/device/termux_smoke.sh
 python scripts/ci/generate_versions.py --check
 python scripts/ci/check_repo.py

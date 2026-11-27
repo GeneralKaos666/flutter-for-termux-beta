@@ -14,6 +14,9 @@ devtools_version = '2.62.0'
 # SHA256 of the published flutter_<tag>-<pkg_rel>_aarch64.deb release asset.
 # Installers fail closed when this is absent or does not match the download.
 sha256 = '64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da'
+# Asset that the sha256 above belongs to. A pin naming another asset is stale
+# (new package revision not yet published) and is skipped by pre-publish checks.
+sha256_asset = 'flutter_3.51.0-0.2.pre-3_aarch64.deb'
 
 [ndk]
 api = 26 # >=26

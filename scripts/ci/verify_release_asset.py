@@ -318,6 +318,15 @@ def main():
         sys.exit(1)
 
     # Validate SHA256 hex format strictly (64 hex characters)
+    pin_asset = flutter_cfg.get("sha256_asset")
+    if pin_asset and str(pin_asset).strip() != expected_asset:
+        print(
+            f"Manifest sha256 pin targets {pin_asset!r}, not {expected_asset!r}; "
+            "skipping checksum/size verification until that asset publishes and "
+            "the pin refreshes."
+        )
+        expected_sha256 = None
+        expected_size = None
     if expected_sha256:
         try:
             expected_sha256 = validate_sha256_format(expected_sha256)
