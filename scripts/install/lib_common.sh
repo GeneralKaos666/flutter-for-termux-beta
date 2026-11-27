@@ -33,7 +33,7 @@ export FLUTTER_PKG_REL="${FLUTTER_PKG_REL:-1}"
 export RELEASE_TAG="${RELEASE_TAG:-3.47.5}"
 # FLUTTER_DEB_SHA256 wins so an override still applies when versions_common.sh
 # was fetched from a branch that hardcodes the placeholder pin.
-export EXPECTED_SHA256="${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-TBD-refresh-after-first-beta-build}}"
+export EXPECTED_SHA256="${FLUTTER_DEB_SHA256:-${EXPECTED_SHA256:-64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da}}"
 export NDK_VERSION="${NDK_VERSION:-29.0.14206865}"
 export FLUTTER_DEB_NAME="${FLUTTER_DEB_NAME:-flutter_${FLUTTER_VERSION}-${FLUTTER_PKG_REL}_aarch64.deb}"
 

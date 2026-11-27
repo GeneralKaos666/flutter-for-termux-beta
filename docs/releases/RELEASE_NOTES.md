@@ -9,8 +9,8 @@ This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2
 | Item | Value |
 |------|-------|
 | Package | `flutter_3.51.0-0.2.pre-3_aarch64.deb` |
-| Size | `TBD (refresh after the first build of this revision)` |
-| SHA256 | `TBD (refresh after the first build of this revision)` |
+| Size | `117714564 bytes (~112 MiB)` |
+| SHA256 | `64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da` |
 | Flutter | 3.51.0-0.2.pre (beta) |
 | Flutter Tools Dart | 3.15.0-118.1.beta |
 | Dart VM | post-install `dartvm` resolves to Dart 3.15.0-118.1.beta (`android_arm64`) |
@@ -21,8 +21,7 @@ This package brings the Termux Flutter SDK to Flutter beta. You get post-v3.44.2
 ```bash
 pkg update -y
 pkg install -y x11-repo wget openjdk-21 7zip
-# NOTE (beta): v3.51.0-0.2.pre-3 publishes from the hosted build. Pin the
-# SHA256 once the asset is published.
+# NOTE (beta): v3.51.0-0.2.pre-3 is published with this asset.
 wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-3/flutter_3.51.0-0.2.pre-3_aarch64.deb
 dpkg -i flutter_3.51.0-0.2.pre-3_aarch64.deb
 apt --fix-broken install -y
@@ -66,7 +65,7 @@ Device smoke on Samsung SM-X716B / Android 16 / ARM64 Termux:
 ### Technical Details
 
 - Build output directories: `linux_debug_arm64/`, `linux_release_arm64/`, `linux_profile_arm64/`, `android_release_arm64/`, `android_profile_arm64/`
-- Deb package size is TBD until the first beta build publishes.
+- Deb package size is 117714564 bytes (~112 MiB) for `flutter_3.51.0-0.2.pre-3_aarch64.deb`.
 
 ## Required per-project Android settings
 

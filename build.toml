@@ -13,8 +13,7 @@ framework_commit_date = '2026-11-18 18:24:20 -0500'
 devtools_version = '2.62.0'
 # SHA256 of the published flutter_<tag>-<pkg_rel>_aarch64.deb release asset.
 # Installers fail closed when this is absent or does not match the download.
-# Empty until the first build of this package revision publishes.
-sha256 = ''
+sha256 = '64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da'
 
 [ndk]
 api = 26 # >=26

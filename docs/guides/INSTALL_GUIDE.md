@@ -17,8 +17,8 @@ This guide covers `flutter_3.51.0-0.2.pre-3_aarch64.deb` on ARM64 Termux:
 | Dart VM (`dartvm`) | post-install `dartvm` resolves to Dart 3.15.0-118.1.beta (`android_arm64`) |
 
 | Test device | Samsung SM-X716B / Android 16 / ARM64 (reference smoke device) |
-| deb size | `TBD (refresh after the first build of this revision)` |
-| SHA256 | `TBD (refresh after the first build of this revision)` |
+| deb size | 117714564 bytes (~112 MiB) |
+| SHA256 | `64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da` |
 
 ## System Requirements
 
@@ -46,11 +46,11 @@ pkg update -y
 pkg install -y x11-repo git wget curl unzip openjdk-21 aapt2 android-tools cmake ninja clang
 
 cd ~
-# NOTE (beta): v3.51.0-0.2.pre-3 has no published hash yet. The installer
-# verifies the SHA256 pin and fails closed until the pin refreshes.
+# NOTE (beta): v3.51.0-0.2.pre-3 is published. The installer verifies the
+# SHA256 pin and fails closed on a mismatch.
 wget https://github.com/GeneralKaos666/flutter-for-termux-beta/releases/download/v3.51.0-0.2.pre-3/flutter_3.51.0-0.2.pre-3_aarch64.deb
 sha256sum flutter_3.51.0-0.2.pre-3_aarch64.deb
-# Expected: TBD (refresh after the first build of this revision)
+# Expected: 64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da
 # For a deb you built yourself, pass the hash per run instead of editing the
 # repo:
 #   FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-3_aarch64.deb | awk '{print $1}')" \

@@ -36,8 +36,8 @@ stable: `build.toml [flutter] tag` is `main`, so the produced deb is
 | Flutter tag | `3.51.0-0.2.pre` |
 | Engine revision | `8f89a71` |
 | Package | `flutter_3.51.0-0.2.pre-3_aarch64.deb` |
-| Package size | `TBD (refresh after the first build of this revision)` |
-| SHA256 | `TBD (refresh after the first build of this revision)` |
+| Package size | `117714564 bytes (~112 MiB)` |
+| SHA256 | `64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da` |
 | Device smoke | Samsung SM-X716B / Android 16 / Termux |
 
 Note these (first observed around 3.47.5) on this branch:

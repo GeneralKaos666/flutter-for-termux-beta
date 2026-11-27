@@ -33,11 +33,11 @@ curl -fSL -o "${DEB}.sha256" "${BASE_URL}${DEB}.sha256"
 sha256sum -c "${DEB}.sha256"
 ```
 
-`v3.51.0-0.2.pre-3` has no hosted release yet. Build the deb yourself
-(see [Build guide](docs/guides/BUILD_GUIDE.md)) or wait for the hosted
-build. Installers fail closed on `EXPECTED_SHA256` until the published hash
-refreshes. To verify a deb you built yourself, override the pin per run
-without editing the repo:
+`v3.51.0-0.2.pre-3` is published with
+`flutter_3.51.0-0.2.pre-3_aarch64.deb` (SHA256
+`64c9793b8d9a4c9bdfc269cc24de85c8a72efd7571d87d037fbc44bd436681da`).
+Installers verify that hash and fail closed on a mismatch. To verify a deb
+you built yourself, override the pin per run without editing the repo:
 
 ```bash
 FLUTTER_DEB_SHA256="$(sha256sum flutter_3.51.0-0.2.pre-3_aarch64.deb | awk '{print $1}')" \
